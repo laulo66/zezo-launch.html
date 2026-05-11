@@ -7,6 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a0f1a">
 <title>ZezoLaunch</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛵</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap');
 
@@ -311,7 +312,7 @@
         <p>3. Appuie sur <strong>ZEZO</strong> ou consulte directement la <strong>Route</strong></p><br>
         <p style="color:var(--muted);font-size:11px">Format coords VR attendu :<br><code style="color:var(--accent);font-family:var(--mono)">10°N 53'20" - 033°W 11'40"</code></p><br>
         <p style="color:var(--muted);font-size:11px">📋 La liste des courses combine celles affichées par Zezo (officielles, mises à jour auto toutes les 24h) avec des courses connues mais non listées (peut-être archivées).</p><br>
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.3.1 — dashlaulo ecosystem<br>RasTaTranKill66_ALT</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.3.2 — dashlaulo ecosystem<br>RasTaTranKill66_ALT</p>
       </div>
     </div>
   </div>
@@ -821,8 +822,9 @@ function parsePointTooltip(mo) {
   const decode = s => s.replace(/&nbsp;/g,' ').replace(/&deg;/g,'°').replace(/&amp;/g,'&');
   const raw = decode(mo);
   const p = {};
-  const dm = raw.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})\s+UTC/);
-  if (dm) { p.dateRaw = `${dm[1]}-${dm[2]}-${dm[3]}`; p.timeRaw = `${dm[4].padStart(2,'0')}:${dm[5]}`; p.dateShort = `${dm[3]}/${dm[2]}`; }
+  // Accepte n'importe quel fuseau horaire : UTC, CEST, CET, GMT, EST, +02:00, etc.
+  const dm = raw.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})\s+([A-Z]{2,5}|[+\-]\d{2}:?\d{0,2})/);
+  if (dm) { p.dateRaw = `${dm[1]}-${dm[2]}-${dm[3]}`; p.timeRaw = `${dm[4].padStart(2,'0')}:${dm[5]}`; p.dateShort = `${dm[3]}/${dm[2]}`; p.tz = dm[6]; }
   const tm = raw.match(/T\+\s*(\d+):(\d{2})/);
   if (tm) p.ttw = `T+${tm[1]}:${tm[2]}`;
   const dim = raw.match(/Distances:\s*([\d.]+)nm\/([\d.]+)nm/);
@@ -881,7 +883,7 @@ function renderPoint(p) {
   const sCls = sailClass(p.sail);
   return `
     <div class="point-card ${tCls}">
-      <div class="point-header"><span class="point-date">${p.dateShort || p.dateRaw} · ${p.timeRaw || '—'}</span><span class="point-ttw">${p.ttw || ''}</span></div>
+      <div class="point-header"><span class="point-date">${p.dateShort || p.dateRaw} · ${p.timeRaw || '—'} ${p.tz && p.tz !== 'UTC' ? '<span style="color:var(--accent);font-size:9px;font-weight:700">'+p.tz+'</span>' : ''}</span><span class="point-ttw">${p.ttw || ''}</span></div>
       <div class="pf"><span class="pf-label">Wind</span><span class="pf-val">${p.twd ?? '—'}° · ${p.tws ?? '—'} kt</span></div>
       <div class="pf"><span class="pf-label">TWA</span><span class="pf-val twa-${tCls}">${p.twa ?? '—'}°</span></div>
       <div class="pf"><span class="pf-label">Sail</span><span class="sail-badge ${sCls}">${p.sail || '—'}</span></div>
