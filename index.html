@@ -311,7 +311,7 @@
         <p>3. Appuie sur <strong>ZEZO</strong> ou consulte directement la <strong>Route</strong></p><br>
         <p style="color:var(--muted);font-size:11px">Format coords VR attendu :<br><code style="color:var(--accent);font-family:var(--mono)">10°N 53'20" - 033°W 11'40"</code></p><br>
         <p style="color:var(--muted);font-size:11px">📋 La liste des courses combine celles affichées par Zezo (officielles, mises à jour auto toutes les 24h) avec des courses connues mais non listées (peut-être archivées).</p><br>
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.3 — dashlaulo ecosystem<br>RasTaTranKill66_ALT</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.3.1 — dashlaulo ecosystem<br>RasTaTranKill66_ALT</p>
       </div>
     </div>
   </div>
@@ -434,9 +434,10 @@ async function refreshCoursesList(force) {
   }
 
   const sources = [
-    { name: 'https-direct', url: 'https://zezo.org/' },
+    // NOTE: zezo.org n'a pas de certificat SSL valide → on passe par les proxies
     { name: 'corsproxy',    url: 'https://corsproxy.io/?' + encodeURIComponent('http://zezo.org/') },
     { name: 'allorigins',   url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('http://zezo.org/') },
+    { name: 'codetabs',     url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('http://zezo.org/') },
   ];
 
   let html = null, usedSource = null;
@@ -545,7 +546,7 @@ function updateCourseCacheInfo() {
   if (!info) return;
   const total = COURSES_OFFICIAL.length + COURSES_EXTRA.length;
   let txt = '', cls = '';
-  const freshSources = ['fresh','https-direct','corsproxy','allorigins'];
+  const freshSources = ['fresh','corsproxy','allorigins','codetabs'];
   if (freshSources.includes(coursesSource)) {
     txt = `${COURSES_OFFICIAL.length} officielles · à jour`; cls = 'course-meta fresh';
   } else if (coursesSource === 'cache') {
@@ -761,9 +762,11 @@ async function loadRoute() {
   content.innerHTML = `<div class="route-loading"><div class="spinner"></div>Récupération de la route depuis Zezo…</div>`;
 
   const sources = [
-    { name: 'direct-https', url: buildZezoUrl('https'), proxy: false },
+    // NOTE: zezo.org n'a pas de certificat SSL valide → on saute le HTTPS direct,
+    // sinon ERR_CERT_AUTHORITY_INVALID. On passe directement par les proxies.
     { name: 'corsproxy',    url: 'https://corsproxy.io/?' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
     { name: 'allorigins',   url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
+    { name: 'codetabs',     url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
   ];
 
   let html = null, usedSource = null;
@@ -795,7 +798,7 @@ async function loadRoute() {
   renderRoute(points);
   btn.classList.remove('loading');
   btn.textContent = '↻ Recharger la route';
-  showToast(`${points.length} points chargés${usedSource === 'direct-https' ? '' : ' (proxy)'}`);
+  showToast(`${points.length} points chargés (via ${usedSource})`);
 }
 
 function parseZezoHtml(html) {
