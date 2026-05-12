@@ -9,198 +9,441 @@
 <title>ZezoLaunch</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛵</text></svg>">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap');
 
-  :root {
-    --bg:        #0a0f1a;
-    --bg2:       #111827;
-    --bg3:       #1a2332;
-    --border:    #1e3050;
-    --accent:    #00c8ff;
-    --accent2:   #00ff9d;
-    --warn:      #ff9f0a;
-    --danger:    #ff453a;
-    --muted:     #4a6080;
-    --text:      #d8e6f3;
-    --text2:     #8ba0b8;
-    --mono:      'Share Tech Mono', monospace;
-    --ui:        'Barlow Condensed', sans-serif;
-    --twa-upwind:   #ff6b6b;
-    --twa-reach:    #4ade80;
-    --twa-downwind: #22d3ee;
-    --sail-jib:  #f9a8d4;
-    --sail-spi:  #c4b5fd;
-    --sail-lg:   #fbbf24;
-    --sail-lj:   #7dd3fc;
-    --sail-c0:   #86efac;
-    --sail-hg:   #fb923c;
-    --sail-hj:   #fda4af;
-    --sail-stay: #d8b4fe;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg); color: var(--text); font-family: var(--ui); min-height: 100dvh; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom); }
-  header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 10px 16px 8px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-  .logo { font-size: 22px; font-weight: 900; letter-spacing: 0.04em; color: var(--accent); text-transform: uppercase; }
-  .logo span { color: var(--text2); font-weight: 400; }
-  .course-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--warn); background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3); border-radius: 4px; padding: 3px 8px; text-transform: uppercase; cursor: pointer; }
-  main { padding: 14px 14px 100px; display: flex; flex-direction: column; gap: 12px; }
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-  .card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 8px 14px 6px; border-bottom: 1px solid var(--border); background: var(--bg3); display: flex; justify-content: space-between; align-items: center; }
-  .card-title .meta { font-size: 9px; color: var(--text2); font-family: var(--mono); text-transform: none; letter-spacing: 0; }
-  .card-body { padding: 12px 14px; }
-  input[type="number"], input[type="text"], select { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 15px; padding: 8px 10px; width: 100%; outline: none; -webkit-appearance: none; }
-  input[type="number"]:focus, input[type="text"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,200,255,0.15); }
+/* ══════════════════════════════════════
+   THÈMES — Variables CSS
+══════════════════════════════════════ */
+:root {
+  /* Dark (défaut) */
+  --bg:        #0a0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2332;
+  --border:    #1e3050;
+  --accent:    #00c8ff;
+  --accent2:   #00ff9d;
+  --warn:      #ff9f0a;
+  --danger:    #ff453a;
+  --muted:     #4a6080;
+  --text:      #d8e6f3;
+  --text2:     #8ba0b8;
+  --card-text: #fff;
+  --mono:      'Share Tech Mono', monospace;
+  --ui:        'Barlow Condensed', sans-serif;
+  /* TWA allures */
+  --twa-upwind:      #ff4d4d;
+  --twa-reach:       #00e676;
+  --twa-downwind:    #00c8ff;
+  --twa-up-bg:       rgba(255,77,77,0.22);
+  --twa-reach-bg:    rgba(0,230,118,0.18);
+  --twa-down-bg:     rgba(0,200,255,0.18);
+  /* Voiles */
+  --sail-jib:  #f9a8d4;
+  --sail-spi:  #c4b5fd;
+  --sail-lg:   #fbbf24;
+  --sail-lj:   #7dd3fc;
+  --sail-c0:   #86efac;
+  --sail-hg:   #fb923c;
+  --sail-hj:   #fda4af;
+  --sail-stay: #d8b4fe;
+}
 
-  /* ── SELECT COURSE STYLÉ ── */
-  .course-select-wrap {
-    position: relative;
-    margin-bottom: 8px;
-  }
-  .course-select {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--ui);
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    padding: 14px 38px 14px 14px;
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image:
-      linear-gradient(45deg, transparent 50%, var(--accent) 50%),
-      linear-gradient(135deg, var(--accent) 50%, transparent 50%);
-    background-position:
-      calc(100% - 18px) 21px,
-      calc(100% - 13px) 21px;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
-  }
-  .course-select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0,200,255,0.15);
-  }
-  .course-select option { background: var(--bg3); color: var(--text); padding: 8px; font-size: 15px; }
-  .course-select optgroup { background: var(--bg2); color: var(--accent); font-weight: 700; font-style: normal; }
-  .course-select option:disabled { color: var(--muted); font-style: italic; }
+/* ── LIGHT ── */
+[data-theme="light"] {
+  --bg:        #f0f4f8;
+  --bg2:       #ffffff;
+  --bg3:       #e2eaf2;
+  --border:    #b0c4d8;
+  --accent:    #0077aa;
+  --accent2:   #00875a;
+  --warn:      #b35c00;
+  --danger:    #c0392b;
+  --muted:     #7a90a4;
+  --text:      #1a2a3a;
+  --text2:     #4a6070;
+  --card-text: #000;
+  --twa-upwind:      #c0392b;
+  --twa-reach:       #27ae60;
+  --twa-downwind:    #0077aa;
+  --twa-up-bg:       rgba(192,57,43,0.15);
+  --twa-reach-bg:    rgba(39,174,96,0.15);
+  --twa-down-bg:     rgba(0,119,170,0.15);
+}
 
-  .course-current-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 10px;
-    background: rgba(0,200,255,0.06);
-    border: 1px solid rgba(0,200,255,0.2);
-    border-radius: 6px;
-    margin-bottom: 8px;
-  }
-  .course-current-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
-  .course-current-slug { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 700; }
+/* ── DASHLAULO ── */
+[data-theme="laulo"] {
+  --bg:        #05080f;
+  --bg2:       #0a0e1a;
+  --bg3:       #111828;
+  --border:    #1a2840;
+  --accent:    #00ffe0;
+  --accent2:   #ffe600;
+  --warn:      #ff8c00;
+  --danger:    #ff2244;
+  --muted:     #3a5060;
+  --text:      #c8e8ff;
+  --text2:     #6a90b0;
+  --card-text: #fff;
+  --twa-upwind:      #ff3355;
+  --twa-reach:       #ffe600;
+  --twa-downwind:    #00ffe0;
+  --twa-up-bg:       rgba(255,51,85,0.22);
+  --twa-reach-bg:    rgba(255,230,0,0.18);
+  --twa-down-bg:     rgba(0,255,224,0.18);
+}
 
-  .course-actions { display: flex; gap: 6px; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--border); }
-  .course-refresh-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text2); font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; padding: 6px 12px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
-  .course-refresh-btn:active { transform: scale(0.96); background: var(--bg2); }
-  .course-refresh-btn.loading { color: var(--accent); border-color: var(--accent); }
-  .course-meta { font-size: 10px; color: var(--muted); font-family: var(--mono); flex: 1; text-align: right; }
-  .course-meta.fresh { color: var(--accent2); }
-  .course-meta.stale { color: var(--warn); }
+/* ── DALTONIEN DEUTERANOPIE (rouge-vert) ── */
+[data-theme="deuteranopia"] {
+  --bg:        #0a0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2332;
+  --border:    #1e3050;
+  --accent:    #56b4e9;
+  --accent2:   #f0e442;
+  --warn:      #e69f00;
+  --danger:    #cc79a7;
+  --muted:     #4a6080;
+  --text:      #d8e6f3;
+  --text2:     #8ba0b8;
+  --card-text: #fff;
+  --twa-upwind:      #cc79a7;
+  --twa-reach:       #f0e442;
+  --twa-downwind:    #56b4e9;
+  --twa-up-bg:       rgba(204,121,167,0.25);
+  --twa-reach-bg:    rgba(240,228,66,0.20);
+  --twa-down-bg:     rgba(86,180,233,0.22);
+  --sail-jib:  #56b4e9;
+  --sail-spi:  #cc79a7;
+  --sail-lg:   #f0e442;
+  --sail-lj:   #009e73;
+  --sail-c0:   #0072b2;
+}
 
-  .coord-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
-  .coord-dir-label { font-size: 13px; font-weight: 900; font-family: var(--ui); color: var(--accent); letter-spacing: 0.06em; width: 32px; flex-shrink: 0; text-transform: uppercase; }
-  .coord-field { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
-  .coord-field input { text-align: center; font-size: 22px; font-weight: 700; padding: 10px 4px; width: 100%; }
-  .coord-field-label { font-size: 9px; color: var(--muted); font-family: var(--ui); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-  .coord-sep-sym { font-family: var(--mono); font-size: 20px; color: var(--muted); flex-shrink: 0; padding-bottom: 16px; }
-  .coord-dir-select { flex-shrink: 0; width: 58px; font-family: var(--ui); font-weight: 700; font-size: 16px; padding: 10px 4px; text-align: center; color: var(--warn); border-color: rgba(255,159,10,0.4); }
-  .coord-dir-select:focus { border-color: var(--warn); box-shadow: 0 0 0 2px rgba(255,159,10,0.15); }
-  .coords-display { font-family: var(--mono); font-size: 16px; color: var(--accent); letter-spacing: 0.04em; padding: 8px 0 4px; }
-  .coords-display.empty { color: var(--muted); font-size: 13px; }
+/* ── DALTONIEN PROTANOPIE ── */
+[data-theme="protanopia"] {
+  --bg:        #0a0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2332;
+  --border:    #1e3050;
+  --accent:    #56b4e9;
+  --accent2:   #f0e442;
+  --warn:      #e69f00;
+  --danger:    #0072b2;
+  --muted:     #4a6080;
+  --text:      #d8e6f3;
+  --text2:     #8ba0b8;
+  --card-text: #fff;
+  --twa-upwind:      #0072b2;
+  --twa-reach:       #f0e442;
+  --twa-downwind:    #56b4e9;
+  --twa-up-bg:       rgba(0,114,178,0.25);
+  --twa-reach-bg:    rgba(240,228,66,0.20);
+  --twa-down-bg:     rgba(86,180,233,0.22);
+  --sail-jib:  #56b4e9;
+  --sail-spi:  #f0e442;
+  --sail-lg:   #e69f00;
+  --sail-lj:   #009e73;
+  --sail-c0:   #0072b2;
+}
 
-  .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .opt-toggle { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-family: var(--ui); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; padding: 10px 6px; cursor: pointer; text-align: center; text-transform: uppercase; transition: all 0.15s; user-select: none; }
-  .opt-toggle.active { background: rgba(0,255,157,0.1); border-color: var(--accent2); color: var(--accent2); }
-  .opt-toggle:active { transform: scale(0.96); }
-  .opt-val { font-size: 9px; font-family: var(--mono); color: var(--muted); display: block; margin-top: 2px; }
-  .opt-val.active-val { color: var(--accent2); }
-  .o-value-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding: 8px 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; }
-  .o-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-  .o-val-display { font-family: var(--mono); font-size: 18px; color: var(--warn); font-weight: 700; }
-  .o-manual { display: flex; align-items: center; gap: 6px; }
-  .o-manual input { width: 60px; font-size: 16px; padding: 5px 8px; text-align: center; }
+/* ── DALTONIEN TRITANOPIE ── */
+[data-theme="tritanopia"] {
+  --bg:        #0a0f1a;
+  --bg2:       #111827;
+  --bg3:       #1a2332;
+  --border:    #1e3050;
+  --accent:    #009e73;
+  --accent2:   #f0e442;
+  --warn:      #e69f00;
+  --danger:    #d55e00;
+  --muted:     #4a6080;
+  --text:      #d8e6f3;
+  --text2:     #8ba0b8;
+  --card-text: #fff;
+  --twa-upwind:      #d55e00;
+  --twa-reach:       #009e73;
+  --twa-downwind:    #f0e442;
+  --twa-up-bg:       rgba(213,94,0,0.25);
+  --twa-reach-bg:    rgba(0,158,115,0.20);
+  --twa-down-bg:     rgba(240,228,66,0.22);
+  --sail-jib:  #009e73;
+  --sail-spi:  #d55e00;
+  --sail-lg:   #f0e442;
+  --sail-lj:   #56b4e9;
+  --sail-c0:   #cc79a7;
+}
 
-  .zezo-fab { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #0077aa, #00c8ff); border: none; border-radius: 50px; color: #fff; font-family: var(--ui); font-size: 20px; font-weight: 900; letter-spacing: 0.12em; padding: 16px 48px; cursor: pointer; box-shadow: 0 6px 32px rgba(0,200,255,0.4); text-transform: uppercase; transition: all 0.15s; white-space: nowrap; z-index: 200; }
-  .zezo-fab:active { transform: translateX(-50%) scale(0.96); box-shadow: 0 2px 16px rgba(0,200,255,0.3); }
-  .zezo-fab.disabled { background: linear-gradient(135deg, #1a2332, #2a3a50); color: var(--muted); box-shadow: none; }
-  .zezo-fab .zezo-sub { display: block; font-size: 10px; font-weight: 400; letter-spacing: 0.08em; opacity: 0.8; margin-top: 1px; font-family: var(--mono); }
+/* ── CONTRASTE ÉLEVÉ ── */
+[data-theme="high-contrast"] {
+  --bg:        #000000;
+  --bg2:       #111111;
+  --bg3:       #1a1a1a;
+  --border:    #444444;
+  --accent:    #00ffff;
+  --accent2:   #00ff00;
+  --warn:      #ffff00;
+  --danger:    #ff0000;
+  --muted:     #888888;
+  --text:      #ffffff;
+  --text2:     #cccccc;
+  --card-text: #fff;
+  --twa-upwind:      #ff0000;
+  --twa-reach:       #00ff00;
+  --twa-downwind:    #00ffff;
+  --twa-up-bg:       rgba(255,0,0,0.30);
+  --twa-reach-bg:    rgba(0,255,0,0.25);
+  --twa-down-bg:     rgba(0,255,255,0.25);
+  --sail-jib:  #ff69b4;
+  --sail-spi:  #da70d6;
+  --sail-lg:   #ffd700;
+  --sail-lj:   #87ceeb;
+  --sail-c0:   #90ee90;
+}
 
-  .status-bar { display: flex; gap: 6px; flex-wrap: wrap; }
-  .status-chip { font-size: 11px; font-family: var(--mono); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); color: var(--text2); background: var(--bg3); }
-  .status-chip.ok { border-color: var(--accent2); color: var(--accent2); background: rgba(0,255,157,0.07); }
-  .status-chip.warn { border-color: var(--warn); color: var(--warn); background: rgba(255,159,10,0.07); }
-  .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-10px); background: var(--bg2); border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); font-family: var(--ui); font-size: 13px; font-weight: 600; padding: 10px 18px; opacity: 0; transition: all 0.3s; z-index: 300; pointer-events: none; white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 51px; z-index: 99; }
-  .tab-btn { flex-shrink: 0; background: none; border: none; color: var(--muted); font-family: var(--ui); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; padding: 12px 16px; cursor: pointer; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: var(--ui); min-height: 100dvh; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom); transition: background 0.3s, color 0.3s; }
 
-  .route-toolbar { display: flex; gap: 8px; align-items: stretch; margin-bottom: 4px; }
-  .route-load-btn { flex: 1; background: linear-gradient(135deg, #0077aa, #00c8ff); border: none; border-radius: 8px; color: #fff; font-family: var(--ui); font-size: 15px; font-weight: 800; letter-spacing: 0.08em; padding: 12px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
-  .route-load-btn:active { transform: scale(0.97); }
-  .route-load-btn.disabled { background: linear-gradient(135deg, #1a2332, #2a3a50); color: var(--muted); cursor: not-allowed; }
-  .route-load-btn.loading { background: linear-gradient(135deg, #1a2332, #1a2332); color: var(--accent); cursor: wait; }
-  .route-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 12px; }
-  .summary-tile { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 6px; text-align: center; }
-  .summary-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
-  .summary-val { font-family: var(--mono); font-size: 16px; color: var(--accent); font-weight: 700; margin-top: 2px; }
-  .route-empty, .route-error, .route-loading { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
-  .route-error { color: var(--danger); }
-  .route-loading { color: var(--accent); }
-  .route-empty .big-icon, .route-error .big-icon, .route-loading .big-icon { font-size: 42px; display: block; margin-bottom: 10px; }
-  .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--bg3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .point-list { display: flex; flex-direction: column; gap: 8px; }
-  .point-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; font-family: var(--mono); font-size: 13px; position: relative; }
-  .point-card::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 2px 2px 0; background: var(--accent); opacity: 0.6; }
-  .point-card.upwind::before   { background: var(--twa-upwind); }
-  .point-card.reach::before    { background: var(--twa-reach); }
-  .point-card.downwind::before { background: var(--twa-downwind); }
-  .point-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 2px; }
-  .point-date { color: var(--text); font-weight: 700; font-size: 13px; }
-  .point-ttw { color: var(--warn); font-size: 11px; font-weight: 700; background: rgba(255,159,10,0.1); padding: 2px 7px; border-radius: 3px; border: 1px solid rgba(255,159,10,0.3); }
-  .pf { display: flex; flex-direction: column; gap: 1px; }
-  .pf-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--ui); font-weight: 700; }
-  .pf-val { font-family: var(--mono); font-size: 14px; color: var(--text); font-weight: 700; }
-  .pf-val.accent { color: var(--accent); }
-  .pf-val.speed  { color: var(--accent2); }
-  .pf-val.warn   { color: var(--warn); }
-  .pf-val.twa-upwind   { color: var(--twa-upwind); }
-  .pf-val.twa-reach    { color: var(--twa-reach); }
-  .pf-val.twa-downwind { color: var(--twa-downwind); }
-  .sail-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-weight: 700; font-size: 12px; letter-spacing: 0.06em; color: #000; }
-  .sail-jib  { background: var(--sail-jib); }
-  .sail-spi  { background: var(--sail-spi); }
-  .sail-lg   { background: var(--sail-lg); }
-  .sail-lj   { background: var(--sail-lj); }
-  .sail-c0   { background: var(--sail-c0); }
-  .sail-hg   { background: var(--sail-hg); }
-  .sail-hj   { background: var(--sail-hj); }
-  .sail-stay { background: var(--sail-stay); }
-  .sail-default { background: var(--text2); }
-  .legend { display: flex; gap: 8px; flex-wrap: wrap; font-size: 10px; color: var(--muted); padding: 8px 4px 0; border-top: 1px dashed var(--border); margin-top: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 4px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+/* ── HEADER ── */
+header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; gap: 8px; }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: 0.04em; color: var(--accent); text-transform: uppercase; flex-shrink: 0; }
+.logo span { color: var(--text2); font-weight: 400; }
+.header-right { display: flex; align-items: center; gap: 6px; }
+.course-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--warn); background: rgba(255,159,10,0.12); border: 1px solid rgba(255,159,10,0.3); border-radius: 4px; padding: 3px 7px; text-transform: uppercase; cursor: pointer; white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.theme-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text2); font-size: 16px; padding: 4px 8px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+.theme-btn:active { transform: scale(0.95); }
+
+/* ── TABS ── */
+.tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 49px; z-index: 99; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { flex-shrink: 0; background: none; border: none; color: var(--muted); font-family: var(--ui); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; padding: 10px 14px; cursor: pointer; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+main { padding: 12px 12px 80px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ── CARDS ── */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: background 0.3s, border-color 0.3s; }
+.card-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 7px 12px 5px; border-bottom: 1px solid var(--border); background: var(--bg3); display: flex; justify-content: space-between; align-items: center; }
+.card-title .meta { font-size: 9px; color: var(--text2); font-family: var(--mono); text-transform: none; letter-spacing: 0; }
+.card-body { padding: 10px 12px; }
+
+/* ── INPUTS ── */
+input[type="number"], input[type="text"], select {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  font-family: var(--mono); font-size: 15px; padding: 7px 9px; width: 100%; outline: none; -webkit-appearance: none;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+input[type="number"]:focus, input[type="text"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,200,255,0.15); }
+
+/* ── COORDS ── */
+.coord-row { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+.coord-dir-label { font-size: 13px; font-weight: 900; color: var(--accent); letter-spacing: 0.06em; width: 30px; flex-shrink: 0; text-transform: uppercase; }
+.coord-field { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+.coord-field input { text-align: center; font-size: 20px; font-weight: 700; padding: 8px 3px; width: 100%; }
+.coord-field-label { font-size: 9px; color: var(--muted); font-family: var(--ui); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.coord-sep-sym { font-family: var(--mono); font-size: 18px; color: var(--muted); flex-shrink: 0; padding-bottom: 14px; }
+.coord-dir-select { flex-shrink: 0; width: 54px; font-family: var(--ui); font-weight: 700; font-size: 15px; padding: 8px 3px; text-align: center; color: var(--warn); border-color: rgba(255,159,10,0.4); }
+.coords-display { font-family: var(--mono); font-size: 15px; color: var(--accent); letter-spacing: 0.04em; padding: 6px 0 3px; }
+.coords-display.empty { color: var(--muted); font-size: 12px; }
+
+/* ── STATUS ── */
+.status-bar { display: flex; gap: 5px; flex-wrap: wrap; }
+.status-chip { font-size: 10px; font-family: var(--mono); padding: 3px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--text2); background: var(--bg3); }
+.status-chip.ok { border-color: var(--accent2); color: var(--accent2); background: rgba(0,255,157,0.07); }
+.status-chip.warn { border-color: var(--warn); color: var(--warn); background: rgba(255,159,10,0.07); }
+
+/* ── COURSE SELECT ── */
+.course-current-info { display: flex; justify-content: space-between; align-items: center; padding: 5px 9px; background: rgba(0,200,255,0.06); border: 1px solid rgba(0,200,255,0.2); border-radius: 6px; margin-bottom: 7px; }
+.course-current-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.course-current-slug { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; }
+.course-select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--ui); font-size: 15px; font-weight: 700; padding: 12px 36px 12px 12px; cursor: pointer; -webkit-appearance: none; appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%); background-position: calc(100% - 16px) 19px, calc(100% - 11px) 19px; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+.course-select option { background: var(--bg3); color: var(--text); }
+.course-select optgroup { background: var(--bg2); color: var(--accent); font-weight: 700; font-style: normal; }
+.course-actions { display: flex; gap: 6px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.course-refresh-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text2); font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; padding: 5px 10px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
+.course-refresh-btn.loading { color: var(--accent); border-color: var(--accent); }
+.course-meta { font-size: 10px; color: var(--muted); font-family: var(--mono); flex: 1; text-align: right; }
+.course-meta.fresh { color: var(--accent2); }
+.course-meta.stale { color: var(--warn); }
+
+/* ── OPTIONS ZEZO ── */
+.options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.opt-toggle { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; padding: 9px 5px; cursor: pointer; text-align: center; text-transform: uppercase; transition: all 0.15s; user-select: none; }
+.opt-toggle.active { background: rgba(0,255,157,0.1); border-color: var(--accent2); color: var(--accent2); }
+.opt-toggle:active { transform: scale(0.96); }
+.opt-val { font-size: 9px; font-family: var(--mono); color: var(--muted); display: block; margin-top: 2px; }
+.opt-val.active-val { color: var(--accent2); }
+.o-value-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 7px 9px; background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; }
+.o-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.o-val-display { font-family: var(--mono); font-size: 17px; color: var(--warn); font-weight: 700; }
+.o-manual { display: flex; align-items: center; gap: 5px; }
+.o-manual input { width: 58px; font-size: 15px; padding: 4px 7px; text-align: center; }
+
+/* ══════════════════════════════════════
+   MODALE THÈME / FUSEAU
+══════════════════════════════════════ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; display: none; align-items: flex-end; justify-content: center; padding: 0 0 env(safe-area-inset-bottom); }
+.modal-overlay.open { display: flex; }
+.modal-sheet { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+.modal-title { font-size: 14px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.modal-section { margin-bottom: 14px; }
+.modal-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.modal-select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--ui); font-size: 15px; font-weight: 600; padding: 11px 12px; cursor: pointer; -webkit-appearance: none; appearance: none; }
+.modal-close { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-family: var(--ui); font-size: 13px; font-weight: 700; padding: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+/* ══════════════════════════════════════
+   ZEZO FAB — RÉDUIT + masqué sur Route
+══════════════════════════════════════ */
+.zezo-fab {
+  position: fixed;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #0077aa, #00c8ff);
+  border: none;
+  border-radius: 40px;
+  color: #fff;
+  font-family: var(--ui);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 11px 32px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,200,255,0.35);
+  text-transform: uppercase;
+  transition: all 0.15s;
+  white-space: nowrap;
+  z-index: 200;
+}
+.zezo-fab:active { transform: translateX(-50%) scale(0.96); }
+.zezo-fab.disabled { background: linear-gradient(135deg, #1a2332, #2a3a50); color: var(--muted); box-shadow: none; }
+.zezo-fab.hidden { display: none; }
+.zezo-fab .zezo-sub { display: block; font-size: 9px; font-weight: 400; letter-spacing: 0.07em; opacity: 0.8; margin-top: 1px; font-family: var(--mono); }
+
+/* ══════════════════════════════════════
+   ROUTE TAB
+══════════════════════════════════════ */
+.route-toolbar { display: flex; gap: 7px; align-items: center; margin-bottom: 10px; }
+.route-load-btn { flex: 1; background: linear-gradient(135deg, #0077aa, #00c8ff); border: none; border-radius: 8px; color: #fff; font-family: var(--ui); font-size: 14px; font-weight: 800; letter-spacing: 0.08em; padding: 11px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
+.route-load-btn:active { transform: scale(0.97); }
+.route-load-btn.disabled { background: linear-gradient(135deg, #1a2332, #2a3a50); color: var(--muted); cursor: not-allowed; }
+.route-load-btn.loading { background: var(--bg3); color: var(--accent); cursor: wait; }
+
+.tz-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-family: var(--mono); font-size: 11px; padding: 6px 8px; cursor: pointer; -webkit-appearance: none; flex-shrink: 0; width: auto; }
+
+.route-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.summary-tile { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 7px 5px; text-align: center; }
+.summary-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.summary-val { font-family: var(--mono); font-size: 15px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+
+.route-empty, .route-error, .route-loading { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.route-error { color: var(--danger); }
+.route-loading { color: var(--accent); }
+.route-empty .big-icon, .route-error .big-icon, .route-loading .big-icon { font-size: 38px; display: block; margin-bottom: 8px; }
+.spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--bg3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════
+   POINT CARDS — TWA fond coloré complet
+══════════════════════════════════════ */
+.point-list { display: flex; flex-direction: column; gap: 7px; }
+.point-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+/* Bande colorée gauche selon allure */
+.point-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+}
+.point-card.upwind::before   { background: var(--twa-upwind); }
+.point-card.reach::before    { background: var(--twa-reach); }
+.point-card.downwind::before { background: var(--twa-downwind); }
+
+/* Indicateur virement/empannage */
+.point-card.maneuver::after {
+  content: '⚡';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+}
+
+.point-inner { padding: 8px 10px 8px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
+
+.point-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 2px; }
+.point-date { color: var(--text); font-weight: 700; font-size: 12px; font-family: var(--mono); }
+.point-ttw { color: var(--warn); font-size: 10px; font-weight: 700; background: rgba(255,159,10,0.1); padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,159,10,0.3); }
+
+.pf { display: flex; flex-direction: column; gap: 1px; }
+.pf-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--ui); font-weight: 700; }
+.pf-val { font-family: var(--mono); font-size: 13px; color: var(--text); font-weight: 700; }
+.pf-val.accent { color: var(--accent); }
+.pf-val.speed  { color: var(--accent2); }
+
+/* TWA — fond coloré par allure */
+.twa-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.twa-badge.upwind   { background: var(--twa-up-bg); color: var(--twa-upwind); border: 1px solid var(--twa-upwind); }
+.twa-badge.reach    { background: var(--twa-reach-bg); color: var(--twa-reach); border: 1px solid var(--twa-reach); }
+.twa-badge.downwind { background: var(--twa-down-bg); color: var(--twa-downwind); border: 1px solid var(--twa-downwind); }
+
+/* Sail badge */
+.sail-badge { display: inline-block; padding: 3px 9px; border-radius: 4px; font-weight: 700; font-size: 12px; letter-spacing: 0.06em; color: #000; }
+.sail-jib  { background: var(--sail-jib); }
+.sail-spi  { background: var(--sail-spi); }
+.sail-lg   { background: var(--sail-lg); }
+.sail-lj   { background: var(--sail-lj); }
+.sail-c0   { background: var(--sail-c0); }
+.sail-hg   { background: var(--sail-hg); }
+.sail-hj   { background: var(--sail-hj); }
+.sail-stay { background: var(--sail-stay); }
+.sail-default { background: var(--text2); }
+
+.legend { display: flex; gap: 8px; flex-wrap: wrap; font-size: 10px; color: var(--muted); padding: 7px 4px 0; border-top: 1px dashed var(--border); margin-top: 6px; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* ── PROFIL EXPORT/IMPORT ── */
+.profile-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(50% - 3px); background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2); font-family: var(--ui); font-size: 12px;
+  font-weight: 700; letter-spacing: 0.06em; padding: 10px 8px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.15s; text-align: center;
+}
+.profile-btn:active { transform: scale(0.96); }
+.profile-btn.export { border-color: var(--accent); color: var(--accent); }
+.profile-btn.import { border-color: var(--accent2); color: var(--accent2); }
+#import-file { display: none; }
+
+/* ── TOAST ── */
+.toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%) translateY(-10px); background: var(--bg2); border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); font-family: var(--ui); font-size: 12px; font-weight: 600; padding: 8px 16px; opacity: 0; transition: all 0.3s; z-index: 400; pointer-events: none; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Zezo<span>Launch</span></div>
-  <div class="course-badge" id="course-badge" onclick="switchTab('config')">— Course —</div>
+  <div class="header-right">
+    <div class="course-badge" id="course-badge" onclick="switchTab('config')">— Course —</div>
+    <button class="theme-btn" onclick="openThemeModal()" title="Thème & Fuseau">🎨</button>
+  </div>
 </header>
 
 <div class="tabs">
@@ -212,50 +455,84 @@
 
 <main>
 
+  <!-- ═══ POSITION ═══ -->
   <div class="tab-panel active" id="panel-coords">
     <div class="card">
       <div class="card-title">📍 Position actuelle</div>
       <div class="card-body">
+        <!-- LAT -->
         <div class="coord-row">
           <div class="coord-dir-label">LAT</div>
-          <div class="coord-field"><input type="number" id="lat_deg" placeholder="11" min="0" max="90" oninput="onCoordsChange(); autoNext(this,'lat_min',2)"><span class="coord-field-label">degrés °</span></div>
+          <div class="coord-field">
+            <input type="number" id="lat_deg" placeholder="18" min="0" max="90"
+              oninput="onCoordsChange(); autoJump(this,'lat_min',99)"
+              onkeydown="coordKeyDown(event,'lat_min')">
+            <span class="coord-field-label">degrés °</span>
+          </div>
           <span class="coord-sep-sym">°</span>
-          <div class="coord-field"><input type="number" id="lat_min" placeholder="14" min="0" max="59" oninput="onCoordsChange(); autoNext(this,'lat_sec',2)"><span class="coord-field-label">minutes '</span></div>
+          <div class="coord-field">
+            <input type="number" id="lat_min" placeholder="46" min="0" max="59"
+              oninput="onCoordsChange(); autoJump(this,'lat_sec',59)"
+              onkeydown="coordKeyDown(event,'lat_sec')">
+            <span class="coord-field-label">minutes '</span>
+          </div>
           <span class="coord-sep-sym">'</span>
-          <div class="coord-field"><input type="number" id="lat_sec" placeholder="15" min="0" max="59" oninput="onCoordsChange()"><span class="coord-field-label">secondes "</span></div>
-          <select class="coord-dir-select" id="lat_ns" onchange="onCoordsChange()"><option value="N">N</option><option value="S">S</option></select>
+          <div class="coord-field">
+            <input type="number" id="lat_sec" placeholder="36" min="0" max="59"
+              oninput="onCoordsChange(); autoJump(this,'lon_deg',59)"
+              onkeydown="coordKeyDown(event,'lon_deg')">
+            <span class="coord-field-label">secondes "</span>
+          </div>
+          <select class="coord-dir-select" id="lat_ns" onchange="onCoordsChange()">
+            <option value="N">N</option><option value="S">S</option>
+          </select>
         </div>
+        <!-- LON -->
         <div class="coord-row">
           <div class="coord-dir-label">LON</div>
-          <div class="coord-field"><input type="number" id="lon_deg" placeholder="33" min="0" max="180" oninput="onCoordsChange(); autoNext(this,'lon_min',3)"><span class="coord-field-label">degrés °</span></div>
+          <div class="coord-field">
+            <input type="number" id="lon_deg" placeholder="38" min="0" max="180"
+              oninput="onCoordsChange(); autoJump(this,'lon_min',99)"
+              onkeydown="coordKeyDown(event,'lon_min')">
+            <span class="coord-field-label">degrés °</span>
+          </div>
           <span class="coord-sep-sym">°</span>
-          <div class="coord-field"><input type="number" id="lon_min" placeholder="24" min="0" max="59" oninput="onCoordsChange(); autoNext(this,'lon_sec',2)"><span class="coord-field-label">minutes '</span></div>
+          <div class="coord-field">
+            <input type="number" id="lon_min" placeholder="19" min="0" max="59"
+              oninput="onCoordsChange(); autoJump(this,'lon_sec',59)"
+              onkeydown="coordKeyDown(event,'lon_sec')">
+            <span class="coord-field-label">minutes '</span>
+          </div>
           <span class="coord-sep-sym">'</span>
-          <div class="coord-field"><input type="number" id="lon_sec" placeholder="29" min="0" max="59" oninput="onCoordsChange()"><span class="coord-field-label">secondes "</span></div>
-          <select class="coord-dir-select" id="lon_ew" onchange="onCoordsChange()"><option value="W">W</option><option value="E">E</option></select>
+          <div class="coord-field">
+            <input type="number" id="lon_sec" placeholder="40" min="0" max="59"
+              oninput="onCoordsChange()">
+            <span class="coord-field-label">secondes "</span>
+          </div>
+          <select class="coord-dir-select" id="lon_ew" onchange="onCoordsChange()">
+            <option value="W">W</option><option value="E">E</option>
+          </select>
         </div>
         <div class="coords-display" id="coords-preview">— Aucune position —</div>
-        <div class="status-bar" style="margin-top:8px" id="status-bar"><div class="status-chip warn">Position non définie</div></div>
+        <div class="status-bar" style="margin-top:7px" id="status-bar">
+          <div class="status-chip warn">Position non définie</div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- ═══ CONFIG ═══ -->
   <div class="tab-panel" id="panel-config">
     <div class="card">
       <div class="card-title">🏆 Course<span class="meta" id="course-meta-inline"></span></div>
       <div class="card-body">
-
         <div class="course-current-info">
           <span class="course-current-label">Course sélectionnée</span>
-          <span class="course-current-slug" id="course-current-slug">london</span>
+          <span class="course-current-slug" id="course-current-slug">—</span>
         </div>
-
-        <div class="course-select-wrap">
-          <select class="course-select" id="course-select" onchange="onCourseSelectChange()">
-            <option>Chargement…</option>
-          </select>
-        </div>
-
+        <select class="course-select" id="course-select" onchange="onCourseSelectChange()">
+          <option>Chargement…</option>
+        </select>
         <div class="course-actions">
           <button class="course-refresh-btn" id="course-refresh-btn" onclick="manualRefreshCourses()">↻ Actualiser</button>
           <span class="course-meta" id="course-cache-info">—</span>
@@ -271,8 +548,8 @@
           <span class="o-label">Valeur o=</span>
           <span class="o-val-display" id="o-display">0</span>
           <div class="o-manual">
-            <span style="font-size:11px;color:var(--muted)">ou manuel :</span>
-            <input type="number" id="o-manual-input" placeholder="34" min="0" max="255" style="width:64px" oninput="onOManual()">
+            <span style="font-size:10px;color:var(--muted)">manuel :</span>
+            <input type="number" id="o-manual-input" placeholder="34" min="0" max="255" style="width:58px" oninput="onOManual()">
           </div>
         </div>
       </div>
@@ -281,27 +558,45 @@
     <div class="card">
       <div class="card-title">👤 User ID VR</div>
       <div class="card-body">
-        <input type="text" id="userid-input" placeholder="5fa6cc43a73ee050184d6672" style="font-size:13px;letter-spacing:0.04em" oninput="saveConfig()">
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">Visible dans l'URL Zezo après ton premier lancement manuel.</div>
+        <input type="text" id="userid-input" placeholder="5fa6cc43a73ee050184d6672"
+          style="font-size:12px;letter-spacing:0.04em" oninput="saveConfig()">
+        <div style="font-size:10px;color:var(--muted);margin-top:5px">Visible dans l'URL Zezo après un lancement manuel.</div>
       </div>
     </div>
   </div>
 
+  <!-- ═══ ROUTE ═══ -->
   <div class="tab-panel" id="panel-route">
     <div class="card">
       <div class="card-title">🧭 Route Zezo</div>
       <div class="card-body">
         <div class="route-toolbar">
           <button class="route-load-btn disabled" id="route-load-btn" onclick="loadRoute()">Charger la route</button>
+          <select class="tz-select" id="tz-select" onchange="onTzChange()" title="Fuseau horaire">
+            <option value="UTC">UTC</option>
+            <option value="local">⏰ Local</option>
+            <option value="Europe/Paris">CEST/CET</option>
+            <option value="Europe/London">GMT/BST</option>
+            <option value="America/New_York">EST/EDT</option>
+            <option value="America/Los_Angeles">PST/PDT</option>
+            <option value="Asia/Tokyo">JST</option>
+            <option value="Australia/Sydney">AEST</option>
+            <option value="Asia/Singapore">SGT</option>
+            <option value="America/Sao_Paulo">BRT</option>
+          </select>
         </div>
         <div id="route-summary"></div>
         <div id="route-content">
-          <div class="route-empty"><span class="big-icon">🧭</span>Renseigne ta position et ta course,<br>puis clique sur <strong>Charger la route</strong>.</div>
+          <div class="route-empty">
+            <span class="big-icon">🧭</span>
+            Renseigne ta position et ta course,<br>puis clique sur <strong>Charger la route</strong>.
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ═══ INFOS ═══ -->
   <div class="tab-panel" id="panel-about">
     <div class="card">
       <div class="card-title">ℹ️ ZezoLaunch</div>
@@ -309,29 +604,86 @@
         <p><strong style="color:var(--accent)">ZezoLaunch</strong> est un outil compagnon pour Virtual Regatta Offshore.</p><br>
         <p>1. Copie tes coords depuis le <strong>journal de bord VR</strong></p>
         <p>2. Colle-les dans l'onglet <strong>Position</strong></p>
-        <p>3. Appuie sur <strong>ZEZO</strong> ou consulte directement la <strong>Route</strong></p><br>
-        <p style="color:var(--muted);font-size:11px">Format coords VR attendu :<br><code style="color:var(--accent);font-family:var(--mono)">10°N 53'20" - 033°W 11'40"</code></p><br>
-        <p style="color:var(--muted);font-size:11px">📋 La liste des courses combine celles affichées par Zezo (officielles, mises à jour auto toutes les 24h) avec des courses connues mais non listées (peut-être archivées).</p><br>
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.3.2 — dashlaulo ecosystem<br>RasTaTranKill66_ALT</p>
+        <p>3. Appuie sur <strong>ZEZO</strong> ou consulte la <strong>Route</strong></p><br>
+        <p style="color:var(--muted);font-size:11px">Format coords VR :<br><code style="color:var(--accent);font-family:var(--mono)">10°N 53'20" - 033°W 11'40"</code></p><br>
+        <p style="color:var(--muted);font-size:11px">🎨 Bouton <strong>🎨</strong> (header) → Thèmes & Fuseau</p><br>
+        <p style="color:var(--muted);font-size:11px">📋 Courses mises à jour auto depuis zezo.org (cache 24h).</p><br>
+
+        <!-- PROFIL EXPORT/IMPORT -->
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:8px">⚙️ Synchroniser mes réglages</div>
+          <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Exporte tes réglages (thème, fuseau, course, userid, O=) pour les retrouver sur un autre appareil ou navigateur.</p>
+          <div style="display:flex;gap:6px;margin-bottom:4px">
+            <button class="profile-btn export" onclick="exportProfile()">📤 Exporter</button>
+            <button class="profile-btn import" onclick="document.getElementById('import-file').click()">📥 Importer</button>
+          </div>
+          <input type="file" id="import-file" accept=".json" onchange="importProfile(event)">
+          <div id="import-status" style="font-size:10px;color:var(--accent2);margin-top:4px;font-family:var(--mono);min-height:14px"></div>
+        </div>
+
+        <!-- LIEN PARTAGE -->
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:6px">🔗 Partager ZezoLaunch</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;margin-bottom:8px" id="share-url">https://laulo66.github.io/zezo-launch.html/</div>
+          <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
+        </div>
+
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.3 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
 
 </main>
 
+<!-- ZEZO FAB -->
 <button class="zezo-fab disabled" id="zezo-btn" onclick="launchZezo()">
   ZEZO ↗
-  <span class="zezo-sub" id="zezo-sub">Définis d'abord ta position</span>
+  <span class="zezo-sub" id="zezo-sub">Définis ta position</span>
 </button>
+
+<!-- MODALE THÈME / FUSEAU -->
+<div class="modal-overlay" id="theme-modal" onclick="closeThemeModalIfOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎨 Apparence</div>
+    <div class="modal-section">
+      <div class="modal-section-label">Thème de couleurs</div>
+      <select class="modal-select" id="theme-select" onchange="applyTheme(this.value)">
+        <option value="dark">🌙 Dark (défaut)</option>
+        <option value="light">☀️ Light</option>
+        <option value="dashlaulo">🎨 Dashlaulo</option>
+        <option value="deuteranopia">🔵 Daltonien — Deutéranopie (rouge-vert)</option>
+        <option value="protanopia">🟡 Daltonien — Protanopie (rouge absent)</option>
+        <option value="tritanopia">🔷 Daltonien — Tritanopie (bleu-jaune)</option>
+        <option value="high-contrast">⚡ Contraste élevé (plein soleil)</option>
+      </select>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Fuseau horaire d'affichage</div>
+      <select class="modal-select" id="tz-modal-select" onchange="onTzModalChange(this.value)">
+        <option value="UTC">UTC (référence universelle)</option>
+        <option value="local">⏰ Heure locale (auto)</option>
+        <option value="Europe/Paris">🇫🇷 Paris — CEST/CET</option>
+        <option value="Europe/London">🇬🇧 London — GMT/BST</option>
+        <option value="America/New_York">🇺🇸 New York — EST/EDT</option>
+        <option value="America/Los_Angeles">🇺🇸 Los Angeles — PST/PDT</option>
+        <option value="America/Sao_Paulo">🇧🇷 São Paulo — BRT</option>
+        <option value="Asia/Tokyo">🇯🇵 Tokyo — JST</option>
+        <option value="Asia/Singapore">🇸🇬 Singapore — SGT</option>
+        <option value="Australia/Sydney">🇦🇺 Sydney — AEST</option>
+      </select>
+    </div>
+    <button class="modal-close" onclick="closeThemeModal()">✕ Fermer</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   LISTE COMPLETE DES COURSES CONNUES (extra hardcoded)
-   Servira de complément au scraping de zezo.org
-═══════════════════════════════════════════════ */
-const COURSES_KNOWN = [
+/* ══════════════════════════════════════
+   DONNÉES
+══════════════════════════════════════ */
+const COURSES_FALLBACK = [
   { slug: 'jv',         label: 'Jules Verne' },
   { slug: 'london',     label: 'HK to London' },
   { slug: 'globe6',     label: 'Globe 40 #7' },
@@ -342,7 +694,6 @@ const COURSES_KNOWN = [
   { slug: 'medchannel', label: 'Med Channel Race' },
   { slug: 'rts',        label: 'Road To Summer' },
   { slug: 'mayo',       label: 'Cinco de Mayo' },
-  // Courses anciennes / saisonnières / spéciales connues
   { slug: 'easter',     label: 'Easter Race' },
   { slug: 'titanic',    label: 'Titanic' },
   { slug: 'vgas',       label: 'Atlantic VGAS' },
@@ -361,8 +712,8 @@ const OPTIONS = [
   { label: 'Pro winch',   bit: 4   },
 ];
 
-let COURSES_OFFICIAL = [];  // scrapées de zezo.org
-let COURSES_EXTRA = [];     // hardcoded non présentes dans officielles
+let COURSES_OFFICIAL = [];
+let COURSES_EXTRA = [];
 let coursesLastFetch = 0;
 let coursesSource = 'unknown';
 let newCoursesDetected = [];
@@ -370,16 +721,22 @@ let newCoursesDetected = [];
 let state = {
   lat_deg: '', lat_min: '', lat_sec: '', lat_ns: 'N',
   lon_deg: '', lon_min: '', lon_sec: '', lon_ew: 'W',
-  course: 'london',
+  course: 'rts',
   o: 34,
   userid: '5fa6cc43a73ee050184d6672',
   coordsReady: false,
+  theme: 'dark',
+  tz: 'UTC',
 };
 
 let lastRoutePoints = null;
 
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
 async function init() {
   loadConfig();
+  applyTheme(state.theme, false);
   buildOptionsGrid();
   restoreFields();
   updateUI();
@@ -387,11 +744,12 @@ async function init() {
   rebuildCourseLists();
   buildCourseSelect();
   updateUI();
+  // Sync sélecteurs fuseau
+  document.getElementById('tz-select').value = state.tz;
+  document.getElementById('tz-modal-select').value = state.tz;
+  document.getElementById('theme-select').value = state.theme;
   if (newCoursesDetected.length > 0) {
-    setTimeout(() => {
-      const names = newCoursesDetected.map(c => c.label).join(', ');
-      showToast(`🆕 Nouvelles courses : ${names}`);
-    }, 1000);
+    setTimeout(() => showToast(`🆕 Nouvelles courses : ${newCoursesDetected.map(c=>c.label).join(', ')}`), 1200);
   }
 }
 
@@ -420,6 +778,102 @@ function restoreFields() {
   document.getElementById('o-manual-input').value = '';
 }
 
+/* ══════════════════════════════════════
+   THÈME
+══════════════════════════════════════ */
+function applyTheme(name, save = true) {
+  document.documentElement.setAttribute('data-theme', name === 'dark' ? '' : name);
+  state.theme = name;
+  document.getElementById('theme-select').value = name;
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    const colors = { dark: '#0a0f1a', light: '#f0f4f8', dashlaulo: '#05080f', deuteranopia: '#0a0f1a', protanopia: '#0a0f1a', tritanopia: '#0a0f1a', 'high-contrast': '#000000' };
+    metaTheme.content = colors[name] || '#0a0f1a';
+  }
+  if (save) { saveConfig(); showToast(`Thème : ${name}`); }
+}
+
+/* ══════════════════════════════════════
+   FUSEAU HORAIRE
+══════════════════════════════════════ */
+function onTzChange() {
+  const val = document.getElementById('tz-select').value;
+  state.tz = val;
+  document.getElementById('tz-modal-select').value = val;
+  saveConfig();
+  if (lastRoutePoints) renderRoute(lastRoutePoints);
+}
+
+function onTzModalChange(val) {
+  state.tz = val;
+  document.getElementById('tz-select').value = val;
+  saveConfig();
+  if (lastRoutePoints) renderRoute(lastRoutePoints);
+}
+
+function formatTimeInTz(dateStr, timeStr, sourceTz) {
+  if (!dateStr || !timeStr) return { date: dateStr, time: timeStr, tz: sourceTz || 'UTC' };
+  try {
+    // Reconstruit un timestamp UTC depuis la chaîne Zezo
+    // On suppose que Zezo donne l'heure dans sourceTz
+    // Pour UTC et conversions standard
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const [h, min] = timeStr.split(':').map(Number);
+    
+    let utcMs;
+    if (!sourceTz || sourceTz === 'UTC') {
+      utcMs = Date.UTC(y, m-1, d, h, min);
+    } else {
+      // Estimation approximative du décalage CEST/CET
+      const offsetMap = {
+        'CEST': 2, 'CET': 1, 'BST': 1, 'GMT': 0,
+        'EDT': -4, 'EST': -5, 'CDT': -5, 'CST': -6,
+        'MDT': -6, 'MST': -7, 'PDT': -7, 'PST': -8,
+        'JST': 9, 'SGT': 8, 'AEST': 10,
+      };
+      const offsetH = offsetMap[sourceTz] || 0;
+      utcMs = Date.UTC(y, m-1, d, h - offsetH, min);
+    }
+
+    if (state.tz === 'UTC') {
+      return { date: dateStr, time: timeStr, tz: 'UTC' };
+    }
+    if (state.tz === 'local') {
+      const dt = new Date(utcMs);
+      return {
+        date: `${String(dt.getFullYear())}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`,
+        time: `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`,
+        tz: '⏰',
+        dateShort: `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`,
+      };
+    }
+    // Intl pour les fuseaux nommés
+    const dt = new Date(utcMs);
+    const opts = { timeZone: state.tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+    const parts = new Intl.DateTimeFormat('fr-FR', opts).formatToParts(dt);
+    const get = t => parts.find(p => p.type === t)?.value || '00';
+    const tzAbbr = new Intl.DateTimeFormat('en', { timeZone: state.tz, timeZoneName: 'short' }).formatToParts(dt).find(p => p.type === 'timeZoneName')?.value || state.tz;
+    return {
+      date: `${get('year')}-${get('month')}-${get('day')}`,
+      time: `${get('hour')}:${get('minute')}`,
+      tz: tzAbbr,
+      dateShort: `${get('day')}/${get('month')}`,
+    };
+  } catch(e) {
+    return { date: dateStr, time: timeStr, tz: sourceTz || 'UTC' };
+  }
+}
+
+/* ══════════════════════════════════════
+   MODALE
+══════════════════════════════════════ */
+function openThemeModal() { document.getElementById('theme-modal').classList.add('open'); }
+function closeThemeModal() { document.getElementById('theme-modal').classList.remove('open'); }
+function closeThemeModalIfOutside(e) { if (e.target === document.getElementById('theme-modal')) closeThemeModal(); }
+
+/* ══════════════════════════════════════
+   SCRAPING COURSES
+══════════════════════════════════════ */
 async function refreshCoursesList(force) {
   if (!force) {
     try {
@@ -435,10 +889,9 @@ async function refreshCoursesList(force) {
   }
 
   const sources = [
-    // NOTE: zezo.org n'a pas de certificat SSL valide → on passe par les proxies
-    { name: 'corsproxy',    url: 'https://corsproxy.io/?' + encodeURIComponent('http://zezo.org/') },
-    { name: 'allorigins',   url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('http://zezo.org/') },
-    { name: 'codetabs',     url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('http://zezo.org/') },
+    { name: 'corsproxy',  url: 'https://corsproxy.io/?' + encodeURIComponent('http://zezo.org/') },
+    { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('http://zezo.org/') },
+    { name: 'codetabs',   url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('http://zezo.org/') },
   ];
 
   let html = null, usedSource = null;
@@ -459,15 +912,12 @@ async function refreshCoursesList(force) {
       const selects = doc.querySelectorAll('select');
       let select = null;
       for (const s of selects) {
-        const onchange = s.getAttribute('onchange') || '';
-        if (onchange.includes('chart.pl')) { select = s; break; }
+        if ((s.getAttribute('onchange') || '').includes('chart.pl')) { select = s; break; }
       }
       if (select) {
-        const opts = Array.from(select.querySelectorAll('option'));
-        parsedCourses = opts.map(opt => ({
-          slug: opt.value.trim(),
-          label: opt.textContent.trim(),
-        })).filter(c => c.slug && c.label);
+        parsedCourses = Array.from(select.querySelectorAll('option'))
+          .map(o => ({ slug: o.value.trim(), label: o.textContent.trim() }))
+          .filter(c => c.slug && c.label);
       }
     } catch(e) {}
   }
@@ -480,15 +930,10 @@ async function refreshCoursesList(force) {
         newCoursesDetected = parsedCourses.filter(c => !oldSlugs.has(c.slug));
       }
     } catch(e) {}
-
     COURSES_OFFICIAL = parsedCourses;
     coursesLastFetch = Date.now();
     coursesSource = usedSource;
-    try {
-      localStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({
-        ts: coursesLastFetch, list: COURSES_OFFICIAL, source: usedSource,
-      }));
-    } catch(e) {}
+    try { localStorage.setItem(COURSES_CACHE_KEY, JSON.stringify({ ts: coursesLastFetch, list: COURSES_OFFICIAL })); } catch(e) {}
     updateCourseCacheInfo();
     return 'fresh';
   }
@@ -496,48 +941,32 @@ async function refreshCoursesList(force) {
   try {
     const cached = JSON.parse(localStorage.getItem(COURSES_CACHE_KEY) || 'null');
     if (cached && cached.list && cached.list.length > 0) {
-      COURSES_OFFICIAL = cached.list;
-      coursesLastFetch = cached.ts;
-      coursesSource = 'cache-stale';
-      updateCourseCacheInfo();
-      return 'cache-stale';
+      COURSES_OFFICIAL = cached.list; coursesLastFetch = cached.ts; coursesSource = 'cache-stale';
+      updateCourseCacheInfo(); return 'cache-stale';
     }
   } catch(e) {}
 
-  COURSES_OFFICIAL = [];
-  coursesLastFetch = 0;
-  coursesSource = 'fallback';
-  updateCourseCacheInfo();
-  return 'fallback';
+  COURSES_OFFICIAL = []; coursesLastFetch = 0; coursesSource = 'fallback';
+  updateCourseCacheInfo(); return 'fallback';
 }
 
-/* Reconstruit COURSES_EXTRA = celles de COURSES_KNOWN absentes des officielles */
 function rebuildCourseLists() {
   const officialSlugs = new Set(COURSES_OFFICIAL.map(c => c.slug));
-  COURSES_EXTRA = COURSES_KNOWN.filter(c => !officialSlugs.has(c.slug));
+  COURSES_EXTRA = COURSES_FALLBACK.filter(c => !officialSlugs.has(c.slug));
 }
 
 async function manualRefreshCourses() {
   const btn = document.getElementById('course-refresh-btn');
-  btn.classList.add('loading');
-  btn.textContent = '⏳ Chargement…';
+  btn.classList.add('loading'); btn.textContent = '⏳ Chargement…';
   const result = await refreshCoursesList(true);
-  rebuildCourseLists();
-  buildCourseSelect();
-  updateUI();
-  btn.classList.remove('loading');
-  btn.textContent = '↻ Actualiser';
+  rebuildCourseLists(); buildCourseSelect(); updateUI();
+  btn.classList.remove('loading'); btn.textContent = '↻ Actualiser';
   if (result === 'fresh') {
-    if (newCoursesDetected.length > 0) {
-      const names = newCoursesDetected.map(c => c.label).join(', ');
-      showToast(`🆕 Nouvelles courses : ${names}`);
-    } else {
-      showToast(`✓ Liste à jour (${COURSES_OFFICIAL.length} courses)`);
-    }
+    showToast(newCoursesDetected.length > 0 ? `🆕 ${newCoursesDetected.map(c=>c.label).join(', ')}` : `✓ ${COURSES_OFFICIAL.length} courses à jour`);
   } else if (result === 'cache-stale') {
     showToast('⚠️ Zezo injoignable, cache utilisé');
-  } else if (result === 'fallback') {
-    showToast('❌ Liste indisponible, courses connues uniquement');
+  } else {
+    showToast('❌ Liste indisponible, courses par défaut');
   }
 }
 
@@ -545,93 +974,56 @@ function updateCourseCacheInfo() {
   const info = document.getElementById('course-cache-info');
   const inline = document.getElementById('course-meta-inline');
   if (!info) return;
-  const total = COURSES_OFFICIAL.length + COURSES_EXTRA.length;
+  const n = COURSES_OFFICIAL.length;
   let txt = '', cls = '';
-  const freshSources = ['fresh','corsproxy','allorigins','codetabs'];
-  if (freshSources.includes(coursesSource)) {
-    txt = `${COURSES_OFFICIAL.length} officielles · à jour`; cls = 'course-meta fresh';
-  } else if (coursesSource === 'cache') {
-    const ageMin = Math.floor((Date.now() - coursesLastFetch) / 60000);
-    const ageStr = ageMin < 60 ? `${ageMin}min` : `${Math.floor(ageMin/60)}h`;
-    txt = `${COURSES_OFFICIAL.length} officielles · cache ${ageStr}`; cls = 'course-meta';
-  } else if (coursesSource === 'cache-stale') {
-    txt = `${COURSES_OFFICIAL.length} officielles · cache périmé`; cls = 'course-meta stale';
-  } else if (coursesSource === 'fallback') {
-    txt = `Zezo injoignable`; cls = 'course-meta stale';
-  } else {
-    txt = `${COURSES_OFFICIAL.length} officielles`;
-  }
-  info.textContent = txt;
-  info.className = cls;
+  if (['fresh','corsproxy','allorigins','codetabs'].includes(coursesSource)) { txt = `${n} officielles · à jour`; cls = 'course-meta fresh'; }
+  else if (coursesSource === 'cache') {
+    const ageMin = Math.floor((Date.now()-coursesLastFetch)/60000);
+    txt = `${n} officielles · cache ${ageMin < 60 ? ageMin+'min' : Math.floor(ageMin/60)+'h'}`; cls = 'course-meta';
+  } else if (coursesSource === 'cache-stale') { txt = `${n} officielles · périmé`; cls = 'course-meta stale'; }
+  else { txt = `liste de secours`; cls = 'course-meta stale'; }
+  info.textContent = txt; info.className = cls;
   if (inline) inline.textContent = `${COURSES_OFFICIAL.length + COURSES_EXTRA.length} courses`;
 }
 
 function buildCourseSelect() {
   const select = document.getElementById('course-select');
   if (!select) return;
-
   const newSlugs = new Set(newCoursesDetected.map(c => c.slug));
+  const allSlugs = new Set([...COURSES_OFFICIAL.map(c=>c.slug), ...COURSES_EXTRA.map(c=>c.slug)]);
   let html = '';
-
-  // Vérifie si la course actuelle existe dans une des listes
-  const allSlugs = new Set([...COURSES_OFFICIAL.map(c => c.slug), ...COURSES_EXTRA.map(c => c.slug)]);
-  const currentInLists = allSlugs.has(state.course);
-
-  // Si la course actuelle n'est dans aucune liste : on l'ajoute en tête comme "personnalisée"
-  if (state.course && !currentInLists) {
-    html += `<optgroup label="⚠️ Course personnalisée">`;
-    html += `<option value="${state.course}" selected>${state.course} (slug)</option>`;
-    html += `</optgroup>`;
+  if (state.course && !allSlugs.has(state.course)) {
+    html += `<optgroup label="⚠️ Course personnalisée"><option value="${state.course}" selected>${state.course}</option></optgroup>`;
   }
-
-  // Section : courses officielles Zezo
   if (COURSES_OFFICIAL.length > 0) {
     html += `<optgroup label="🟢 Officielles Zezo (actives)">`;
     for (const c of COURSES_OFFICIAL) {
-      const isNew = newSlugs.has(c.slug) ? ' 🆕' : '';
-      const sel = state.course === c.slug ? ' selected' : '';
-      html += `<option value="${c.slug}"${sel}>${escapeHtml(c.label)}${isNew}</option>`;
+      html += `<option value="${c.slug}"${state.course===c.slug?' selected':''}>${escHtml(c.label)}${newSlugs.has(c.slug)?' 🆕':''}</option>`;
     }
     html += `</optgroup>`;
   }
-
-  // Section : autres courses connues (non listées par Zezo actuellement)
   if (COURSES_EXTRA.length > 0) {
     html += `<optgroup label="⚪ Autres courses connues">`;
     for (const c of COURSES_EXTRA) {
-      const sel = state.course === c.slug ? ' selected' : '';
-      html += `<option value="${c.slug}"${sel}>${escapeHtml(c.label)}</option>`;
+      html += `<option value="${c.slug}"${state.course===c.slug?' selected':''}>${escHtml(c.label)}</option>`;
     }
     html += `</optgroup>`;
   }
-
-  if (!html) {
-    html = `<option disabled>Aucune course disponible</option>`;
-  }
-
-  select.innerHTML = html;
+  select.innerHTML = html || `<option disabled>Aucune course disponible</option>`;
   updateCourseSlugDisplay();
 }
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function onCourseSelectChange() {
-  const select = document.getElementById('course-select');
-  const slug = select.value;
+  const slug = document.getElementById('course-select').value;
   if (!slug) return;
-  const label = getCourseLabel(slug);
   state.course = slug;
   saveConfig();
-  document.getElementById('course-badge').textContent = label;
+  document.getElementById('course-badge').textContent = getCourseLabel(slug);
   updateCourseSlugDisplay();
-  showToast(`Course : ${label}`);
-  updateZezoBtn();
-  updateRouteBtn();
-  updateUI();
+  showToast(`Course : ${getCourseLabel(slug)}`);
+  updateZezoBtn(); updateRouteBtn(); updateUI();
 }
 
 function updateCourseSlugDisplay() {
@@ -639,37 +1031,33 @@ function updateCourseSlugDisplay() {
   if (el) el.textContent = state.course || '—';
 }
 
+/* ══════════════════════════════════════
+   OPTIONS ZEZO
+══════════════════════════════════════ */
 function buildOptionsGrid() {
   const grid = document.getElementById('options-grid');
   grid.innerHTML = OPTIONS.map(opt => {
     const active = opt.full ? (state.o & 244) === 244 : (state.o & opt.bit) !== 0;
-    return `<div class="opt-toggle ${active ? 'active' : ''}" onclick="toggleOption(${opt.bit}, ${!!opt.full})" data-bit="${opt.bit}">${opt.label}<span class="opt-val ${active ? 'active-val' : ''}">${active ? 'ON' : 'off'}</span></div>`;
+    return `<div class="opt-toggle ${active?'active':''}" onclick="toggleOption(${opt.bit},${!!opt.full})">${opt.label}<span class="opt-val ${active?'active-val':''}">${active?'ON':'off'}</span></div>`;
   }).join('');
   document.getElementById('o-display').textContent = state.o;
 }
 
 function toggleOption(bit, isFull) {
-  if (isFull) {
-    const allBits = 244;
-    const isFullOn = (state.o & allBits) === allBits;
-    state.o = isFullOn ? 2 : 246;
-  } else {
-    state.o = (state.o | 2) ^ bit;
-    if ((state.o & bit) === 0) state.o |= 2;
-  }
-  saveConfig();
-  buildOptionsGrid();
+  if (isFull) { const allBits=244; state.o = (state.o&allBits)===allBits ? 2 : 246; }
+  else { state.o = (state.o|2)^bit; if((state.o&bit)===0) state.o|=2; }
+  saveConfig(); buildOptionsGrid();
 }
 
 function onOManual() {
   const v = parseInt(document.getElementById('o-manual-input').value);
-  if (!isNaN(v) && v >= 0 && v <= 255) { state.o = v; saveConfig(); buildOptionsGrid(); }
+  if (!isNaN(v) && v>=0 && v<=255) { state.o=v; saveConfig(); buildOptionsGrid(); }
 }
 
-function autoNext(el, nextId, digits) {
-  if (String(el.value).replace('-','').length >= digits) document.getElementById(nextId)?.focus();
-}
-
+/* ══════════════════════════════════════
+   COORDS — Bug LON corrigé
+   Auto-jump sur : 2 chiffres saisis OU touche Tab/Entrée/→
+══════════════════════════════════════ */
 function onCoordsChange() {
   state.lat_deg = parseInt(document.getElementById('lat_deg').value) || '';
   state.lat_min = parseInt(document.getElementById('lat_min').value) || '';
@@ -679,8 +1067,29 @@ function onCoordsChange() {
   state.lon_min = parseInt(document.getElementById('lon_min').value) || '';
   state.lon_sec = parseInt(document.getElementById('lon_sec').value) || '';
   state.lon_ew  = document.getElementById('lon_ew').value;
-  saveConfig();
-  updateUI();
+  saveConfig(); updateUI();
+}
+
+// Auto-jump indépendant : appelé depuis oninput de chaque input spécifiquement
+// maxVal : valeur max du champ (ex: 59 pour min/sec, 90 pour lat_deg, 180 pour lon_deg)
+function autoJump(el, nextId, maxVal) {
+  const raw = el.value;
+  if (!raw) return;
+  const v = parseInt(raw);
+  if (isNaN(v)) return;
+  // Saute quand le nombre de chiffres saisis atteint le nombre de chiffres du max
+  const digitsNeeded = String(maxVal).length;
+  if (String(Math.abs(v)).length >= digitsNeeded) {
+    setTimeout(() => document.getElementById(nextId)?.focus(), 0);
+  }
+}
+
+// Déclenche le saut sur Tab / Entrée / ArrowRight
+function coordKeyDown(e, nextId) {
+  if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    document.getElementById(nextId)?.focus();
+  }
 }
 
 function coordsValid() {
@@ -688,6 +1097,9 @@ function coordsValid() {
          state.lon_deg !== '' && state.lon_min !== '' && state.lon_sec !== '';
 }
 
+/* ══════════════════════════════════════
+   UI UPDATE
+══════════════════════════════════════ */
 function updateUI() {
   const ok = coordsValid();
   state.coordsReady = ok;
@@ -702,44 +1114,37 @@ function updateUI() {
     preview.textContent = '— Aucune position définie —';
     statusBar.innerHTML = `<div class="status-chip warn">Position non définie</div>`;
   }
-  updateZezoBtn();
-  updateRouteBtn();
+  updateZezoBtn(); updateRouteBtn();
   document.getElementById('course-badge').textContent = getCourseLabel(state.course);
   updateCourseSlugDisplay();
 }
 
 function getCourseLabel(slug) {
-  const all = [...COURSES_OFFICIAL, ...COURSES_EXTRA, ...COURSES_KNOWN];
-  const found = all.find(c => c.slug === slug);
-  return found ? found.label : (slug || '—');
+  const all = [...COURSES_OFFICIAL, ...COURSES_EXTRA, ...COURSES_FALLBACK];
+  return all.find(c=>c.slug===slug)?.label || slug || '—';
 }
 
 function updateZezoBtn() {
   const btn = document.getElementById('zezo-btn');
   const sub = document.getElementById('zezo-sub');
   const ok = coordsValid() && state.course;
-  if (ok) {
-    btn.className = 'zezo-fab';
-    sub.textContent = `${getCourseLabel(state.course)} · o=${state.o}`;
-  } else {
-    btn.className = 'zezo-fab disabled';
-    sub.textContent = coordsValid() ? 'Sélectionne une course' : 'Définis ta position';
-  }
+  btn.className = `zezo-fab${ok ? '' : ' disabled'}`;
+  sub.textContent = ok ? `${getCourseLabel(state.course)} · o=${state.o}` : (coordsValid() ? 'Sélectionne une course' : 'Définis ta position');
 }
 
 function updateRouteBtn() {
   const btn = document.getElementById('route-load-btn');
   if (!btn) return;
-  const ok = coordsValid() && state.course;
-  btn.classList.toggle('disabled', !ok);
+  btn.classList.toggle('disabled', !(coordsValid() && state.course));
 }
 
+/* ══════════════════════════════════════
+   URL + ZEZO LAUNCH
+══════════════════════════════════════ */
 function buildZezoUrl(proto) {
   const params = new URLSearchParams({
-    st: '0',
-    lat_deg: state.lat_deg, lat_min: state.lat_min, lat_sec: state.lat_sec, lat_ns: state.lat_ns,
-    lon_deg: state.lon_deg, lon_min: state.lon_min, lon_sec: state.lon_sec, lon_ew: state.lon_ew,
-    o: state.o,
+    st:'0', lat_deg:state.lat_deg, lat_min:state.lat_min, lat_sec:state.lat_sec, lat_ns:state.lat_ns,
+    lon_deg:state.lon_deg, lon_min:state.lon_min, lon_sec:state.lon_sec, lon_ew:state.lon_ew, o:state.o,
   });
   if (state.userid) params.set('userid', state.userid);
   return `${proto}://zezo.org/${state.course}/chart.pl?${params.toString()}`;
@@ -751,23 +1156,22 @@ function launchZezo() {
   showToast('Zezo ouvert !');
 }
 
+/* ══════════════════════════════════════
+   ROUTE — FETCH + PARSE
+══════════════════════════════════════ */
 async function loadRoute() {
   if (!coordsValid() || !state.course) { showToast('Position ou course manquante'); return; }
   const btn = document.getElementById('route-load-btn');
   const content = document.getElementById('route-content');
   const summary = document.getElementById('route-summary');
-  btn.classList.add('loading');
-  btn.classList.remove('disabled');
-  btn.textContent = 'Chargement…';
+  btn.classList.add('loading'); btn.classList.remove('disabled'); btn.textContent = 'Chargement…';
   summary.innerHTML = '';
-  content.innerHTML = `<div class="route-loading"><div class="spinner"></div>Récupération de la route depuis Zezo…</div>`;
+  content.innerHTML = `<div class="route-loading"><div class="spinner"></div>Récupération de la route…</div>`;
 
   const sources = [
-    // NOTE: zezo.org n'a pas de certificat SSL valide → on saute le HTTPS direct,
-    // sinon ERR_CERT_AUTHORITY_INVALID. On passe directement par les proxies.
-    { name: 'corsproxy',    url: 'https://corsproxy.io/?' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
-    { name: 'allorigins',   url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
-    { name: 'codetabs',     url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(buildZezoUrl('http')), proxy: true },
+    { name: 'corsproxy',  url: 'https://corsproxy.io/?' + encodeURIComponent(buildZezoUrl('http')) },
+    { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(buildZezoUrl('http')) },
+    { name: 'codetabs',   url: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(buildZezoUrl('http')) },
   ];
 
   let html = null, usedSource = null;
@@ -781,25 +1185,22 @@ async function loadRoute() {
   }
 
   if (!html) {
-    btn.classList.remove('loading');
-    btn.textContent = 'Réessayer';
-    content.innerHTML = `<div class="route-error"><span class="big-icon">⚠️</span>Impossible de joindre Zezo.<br><small style="color:var(--muted)">Utilise le bouton ZEZO en bas pour ouvrir le site directement.</small></div>`;
+    btn.classList.remove('loading'); btn.textContent = 'Réessayer';
+    content.innerHTML = `<div class="route-error"><span class="big-icon">⚠️</span>Impossible de joindre Zezo.<br><small style="color:var(--muted)">Utilise le bouton ZEZO en bas.</small></div>`;
     return;
   }
 
   const points = parseZezoHtml(html);
   if (!points || points.length === 0) {
-    btn.classList.remove('loading');
-    btn.textContent = 'Réessayer';
-    content.innerHTML = `<div class="route-error"><span class="big-icon">❌</span>Aucun point de route trouvé.<br><small style="color:var(--muted)">Zezo n'a peut-être pas pu router depuis cette position.</small></div>`;
+    btn.classList.remove('loading'); btn.textContent = 'Réessayer';
+    content.innerHTML = `<div class="route-error"><span class="big-icon">❌</span>Aucun point de route trouvé.<br><small style="color:var(--muted)">Zezo n'a pas pu router depuis cette position.</small></div>`;
     return;
   }
 
   lastRoutePoints = points;
   renderRoute(points);
-  btn.classList.remove('loading');
-  btn.textContent = '↻ Recharger la route';
-  showToast(`${points.length} points chargés (via ${usedSource})`);
+  btn.classList.remove('loading'); btn.textContent = '↻ Recharger';
+  showToast(`${points.length} pts (${usedSource})`);
 }
 
 function parseZezoHtml(html) {
@@ -822,38 +1223,69 @@ function parsePointTooltip(mo) {
   const decode = s => s.replace(/&nbsp;/g,' ').replace(/&deg;/g,'°').replace(/&amp;/g,'&');
   const raw = decode(mo);
   const p = {};
-  // Accepte n'importe quel fuseau horaire : UTC, CEST, CET, GMT, EST, +02:00, etc.
+
+  // Accepte n'importe quel fuseau : UTC, CEST, CET, GMT, EST, +02:00, etc.
   const dm = raw.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})\s+([A-Z]{2,5}|[+\-]\d{2}:?\d{0,2})/);
-  if (dm) { p.dateRaw = `${dm[1]}-${dm[2]}-${dm[3]}`; p.timeRaw = `${dm[4].padStart(2,'0')}:${dm[5]}`; p.dateShort = `${dm[3]}/${dm[2]}`; p.tz = dm[6]; }
+  if (dm) {
+    p.dateRaw   = `${dm[1]}-${dm[2]}-${dm[3]}`;
+    p.timeRaw   = `${dm[4].padStart(2,'0')}:${dm[5]}`;
+    p.dateShort = `${dm[3]}/${dm[2]}`;
+    p.sourceTz  = dm[6];
+  }
+
   const tm = raw.match(/T\+\s*(\d+):(\d{2})/);
   if (tm) p.ttw = `T+${tm[1]}:${tm[2]}`;
+
   const dim = raw.match(/Distances:\s*([\d.]+)nm\/([\d.]+)nm/);
   if (dim) { p.dtw = parseFloat(dim[1]); p.dtg = parseFloat(dim[2]); }
+
   const wm = raw.match(/Wind:\s*<\/?b?>?\s*(-?\d+)°?\s+([\d.]+)\s*kt/i);
   if (wm) { p.twd = parseInt(wm[1]); p.tws = parseFloat(wm[2]); }
+
   const twam = raw.match(/TWA\s*(-?\d+)°?/i);
   if (twam) p.twa = parseInt(twam[1]);
+
   const hm = raw.match(/Heading:\s*<\/?b?>?\s*(\d+)°?/i);
   if (hm) p.heading = parseInt(hm[1]);
+
   const sm = raw.match(/Sail:\s*<\/?b?>?\s*([A-Za-z0-9]+)/i);
   if (sm) p.sail = sm[1];
+
   const bsm = raw.match(/Boat Speed:\s*<\/?b?>?\s*([\d.]+)\s*kts?/i);
   if (bsm) p.stw = parseFloat(bsm[1]);
+
   if (!p.dateRaw || p.twa === undefined) return null;
   return p;
 }
 
+/* ══════════════════════════════════════
+   RENDER ROUTE
+══════════════════════════════════════ */
 function renderRoute(points) {
-  const last = points[points.length - 1];
-  const totalH = last.ttw ? last.ttw.replace('T+','') : '?';
+  const last = points[points.length-1];
   const dtgEnd = last.dtg || 0;
+  const totalH = last.ttw ? last.ttw.replace('T+','') : '?';
   document.getElementById('route-summary').innerHTML = `
     <div class="route-summary">
       <div class="summary-tile"><div class="summary-label">Points</div><div class="summary-val">${points.length}</div></div>
       <div class="summary-tile"><div class="summary-label">Durée</div><div class="summary-val">${totalH}</div></div>
       <div class="summary-tile"><div class="summary-label">DTG fin</div><div class="summary-val">${dtgEnd}</div></div>
     </div>`;
-  const html = points.map(p => renderPoint(p)).join('') + renderLegend();
+
+  // Détection virements/empannages (changement de signe TWA ou croisement 0/180)
+  const html = points.map((p, i) => {
+    let isManeuver = false;
+    if (i > 0) {
+      const prev = points[i-1];
+      if (prev.twa !== undefined && p.twa !== undefined) {
+        // Changement de signe = virement ou empannage
+        if (Math.sign(prev.twa) !== Math.sign(p.twa) && prev.twa !== 0) isManeuver = true;
+        // Ou grand écart (> 60°) = manœuvre probable
+        if (Math.abs(Math.abs(p.twa) - Math.abs(prev.twa)) > 60) isManeuver = true;
+      }
+    }
+    return renderPoint(p, isManeuver);
+  }).join('') + renderLegend();
   document.getElementById('route-content').innerHTML = `<div class="point-list">${html}</div>`;
 }
 
@@ -867,29 +1299,50 @@ function twaClass(twa) {
 function sailClass(sail) {
   if (!sail) return 'sail-default';
   const s = sail.toLowerCase();
-  if (s === 'jib')  return 'sail-jib';
-  if (s === 'spi')  return 'sail-spi';
-  if (s === 'lg')   return 'sail-lg';
-  if (s === 'lj')   return 'sail-lj';
-  if (s === 'c0')   return 'sail-c0';
-  if (s === 'hg')   return 'sail-hg';
-  if (s === 'hj')   return 'sail-hj';
-  if (s === 'stay') return 'sail-stay';
-  return 'sail-default';
+  const map = { jib:'sail-jib', spi:'sail-spi', lg:'sail-lg', lj:'sail-lj', c0:'sail-c0', hg:'sail-hg', hj:'sail-hj', stay:'sail-stay' };
+  return map[s] || 'sail-default';
 }
 
-function renderPoint(p) {
+function renderPoint(p, isManeuver) {
   const tCls = twaClass(p.twa);
   const sCls = sailClass(p.sail);
+  const tfmt = formatTimeInTz(p.dateRaw, p.timeRaw, p.sourceTz);
+  const dateDisplay = `${tfmt.dateShort || p.dateShort} · ${tfmt.time}`;
+  const tzBadge = (state.tz !== 'UTC' || p.sourceTz !== 'UTC')
+    ? `<span style="font-size:9px;color:var(--accent);margin-left:4px">${tfmt.tz}</span>` : '';
+
   return `
-    <div class="point-card ${tCls}">
-      <div class="point-header"><span class="point-date">${p.dateShort || p.dateRaw} · ${p.timeRaw || '—'} ${p.tz && p.tz !== 'UTC' ? '<span style="color:var(--accent);font-size:9px;font-weight:700">'+p.tz+'</span>' : ''}</span><span class="point-ttw">${p.ttw || ''}</span></div>
-      <div class="pf"><span class="pf-label">Wind</span><span class="pf-val">${p.twd ?? '—'}° · ${p.tws ?? '—'} kt</span></div>
-      <div class="pf"><span class="pf-label">TWA</span><span class="pf-val twa-${tCls}">${p.twa ?? '—'}°</span></div>
-      <div class="pf"><span class="pf-label">Sail</span><span class="sail-badge ${sCls}">${p.sail || '—'}</span></div>
-      <div class="pf"><span class="pf-label">Speed (STW)</span><span class="pf-val speed">${p.stw ?? '—'} kt</span></div>
-      <div class="pf"><span class="pf-label">Heading</span><span class="pf-val accent">${p.heading ?? '—'}°</span></div>
-      <div class="pf"><span class="pf-label">DTG</span><span class="pf-val">${p.dtg ?? '—'} nm</span></div>
+    <div class="point-card ${tCls}${isManeuver ? ' maneuver' : ''}">
+      <div class="point-inner">
+        <div class="point-header">
+          <span class="point-date">${dateDisplay}${tzBadge}</span>
+          <span class="point-ttw">${p.ttw || ''}</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">Wind</span>
+          <span class="pf-val">${p.twd ?? '—'}° · ${p.tws ?? '—'} kt</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">TWA</span>
+          <span class="twa-badge ${tCls}">${p.twa ?? '—'}°</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">Sail</span>
+          <span class="sail-badge ${sCls}">${p.sail || '—'}</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">Speed (STW)</span>
+          <span class="pf-val speed">${p.stw ?? '—'} kt</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">Heading</span>
+          <span class="pf-val accent">${p.heading ?? '—'}°</span>
+        </div>
+        <div class="pf">
+          <span class="pf-label">DTG</span>
+          <span class="pf-val">${p.dtg ?? '—'} nm</span>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -898,24 +1351,135 @@ function renderLegend() {
     <div class="legend-item"><span class="legend-dot" style="background:var(--twa-upwind)"></span>Près</div>
     <div class="legend-item"><span class="legend-dot" style="background:var(--twa-reach)"></span>Travers</div>
     <div class="legend-item"><span class="legend-dot" style="background:var(--twa-downwind)"></span>Portant</div>
+    <div class="legend-item"><span>⚡</span> Manœuvre</div>
   </div>`;
 }
 
+/* ══════════════════════════════════════
+   TABS — masque ZEZO sur Route
+══════════════════════════════════════ */
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name)?.classList.add('active');
   document.getElementById('panel-' + name)?.classList.add('active');
+  // Masquer le bouton ZEZO sur l'onglet Route (inutile et encombrant)
+  const fab = document.getElementById('zezo-btn');
+  if (name === 'route') fab.classList.add('hidden');
+  else { fab.classList.remove('hidden'); updateZezoBtn(); }
   if (name === 'route') updateRouteBtn();
 }
 
+function onTzChange() {
+  const val = document.getElementById('tz-select').value;
+  state.tz = val;
+  document.getElementById('tz-modal-select').value = val;
+  saveConfig();
+  if (lastRoutePoints) renderRoute(lastRoutePoints);
+}
+
+/* ── PROFIL EXPORT/IMPORT ── */
+.profile-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(50% - 3px); background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2); font-family: var(--ui); font-size: 12px;
+  font-weight: 700; letter-spacing: 0.06em; padding: 10px 8px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.15s; text-align: center;
+}
+.profile-btn:active { transform: scale(0.96); }
+.profile-btn.export { border-color: var(--accent); color: var(--accent); }
+.profile-btn.import { border-color: var(--accent2); color: var(--accent2); }
+#import-file { display: none; }
+
+/* ── TOAST ── */
 let toastTimer = null;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ── COPY SHARE URL ── */
+function copyShareUrl() {
+  const url = document.getElementById('share-url').textContent.trim();
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Lien copié !';
+    btn.style.background = 'var(--accent2)';
+    setTimeout(() => {
+      btn.textContent = '📋 Copier le lien';
+      btn.style.background = 'var(--accent)';
+    }, 2000);
+    showToast('Lien copié !');
+  }).catch(() => {
+    // Fallback si clipboard API non disponible
+    const el = document.createElement('textarea');
+    el.value = url;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('Lien copié !');
+  });
+}
+
+/* ══════════════════════════════════════
+   EXPORT / IMPORT PROFIL
+══════════════════════════════════════ */
+function exportProfile() {
+  const profile = {
+    version: '1.4.3',
+    exported: new Date().toISOString(),
+    settings: {
+      theme:   state.theme,
+      tz:      state.tz,
+      course:  state.course,
+      o:       state.o,
+      userid:  state.userid,
+    }
+  };
+  const json = JSON.stringify(profile, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `zezolaunch-profil-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Profil exporté !');
+}
+
+function importProfile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const profile = JSON.parse(e.target.result);
+      if (!profile.settings) throw new Error('Format invalide');
+      const s = profile.settings;
+      // Applique les réglages
+      if (s.theme)  { state.theme  = s.theme;  applyTheme(s.theme, false); }
+      if (s.tz)     { state.tz     = s.tz;     document.getElementById('tz-select').value = s.tz; document.getElementById('tz-modal-select').value = s.tz; }
+      if (s.course) { state.course = s.course; }
+      if (s.o !== undefined) { state.o = s.o; buildOptionsGrid(); }
+      if (s.userid) { state.userid = s.userid; document.getElementById('userid-input').value = s.userid; }
+      saveConfig();
+      buildCourseSelect();
+      updateUI();
+      const statusEl = document.getElementById('import-status');
+      if (statusEl) statusEl.textContent = `✅ Importé depuis ${profile.exported?.slice(0,10) || 'fichier'}`;
+      showToast('✅ Profil importé !');
+    } catch(err) {
+      const statusEl = document.getElementById('import-status');
+      if (statusEl) statusEl.textContent = '❌ Fichier invalide';
+      showToast('❌ Échec import — fichier invalide');
+    }
+    // Reset l'input pour pouvoir réimporter le même fichier
+    event.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 init();
