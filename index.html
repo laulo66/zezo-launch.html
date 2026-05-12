@@ -1493,8 +1493,9 @@ function exportGPX() {
   const dateStr = lastRoutePoints[0]?.dateRaw || new Date().toISOString().slice(0,10);
   const trackName = `ZezoLaunch — ${courseName} — o=${state.o} — ${dateStr}`;
 
-  const trkpts = lastRoutePoints
-    .filter(p => p.lat !== undefined && p.lon !== undefined)
+  const validPoints = lastRoutePoints.filter(p => p.lat !== undefined && p.lon !== undefined);
+
+  const trkpts = validPoints
     .map(p => {
       // Reconstruit un timestamp ISO
       let timeStr = '';
@@ -1527,6 +1528,29 @@ function exportGPX() {
     </trkpt>`;
     }).join('\n');
 
+  // Waypoints — chaque point avec nom et infos clés
+  const wpts = validPoints.map(p => {
+    let timeStr = '';
+    if (p.dateRaw && p.timeRaw) {
+      timeStr = `<time>${p.dateRaw}T${p.timeRaw}:00Z</time>`;
+    }
+    const name = p.ttw || '';
+    const sym = p.sail ? p.sail : 'Waypoint';
+    const desc = [
+      p.twa !== undefined ? `TWA:${Math.abs(p.twa)}°` : '',
+      p.tws !== undefined ? `TWS:${p.tws}kt` : '',
+      p.sail ? `${p.sail}` : '',
+      p.stw !== undefined ? `${p.stw}kt` : '',
+    ].filter(Boolean).join(' ');
+
+    return `  <wpt lat="${p.lat}" lon="${p.lon}">
+    ${timeStr}
+    <name>${name}</name>
+    <desc>${desc}</desc>
+    <sym>${sym}</sym>
+  </wpt>`;
+  }).join('\n');
+
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="ZezoLaunch v1.4.7"
   xmlns="http://www.topografix.com/GPX/1/1"
@@ -1536,6 +1560,7 @@ function exportGPX() {
     <name>${trackName}</name>
     <time>${new Date().toISOString()}</time>
   </metadata>
+${wpts}
   <trk>
     <name>${trackName}</name>
     <trkseg>
