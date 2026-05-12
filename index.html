@@ -356,24 +356,35 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
   overflow: hidden;
   position: relative;
 }
-/* Bande colorée gauche selon allure */
+/* Bande colorée gauche selon manœuvre */
 .point-card::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 5px;
+  background: var(--border);
 }
-.point-card.upwind::before   { background: var(--twa-upwind); }
-.point-card.reach::before    { background: var(--twa-reach); }
-.point-card.downwind::before { background: var(--twa-downwind); }
+.point-card.tack::before   { background: var(--twa-upwind); }   /* virement = rouge */
+.point-card.gybe::before   { background: var(--twa-reach); }    /* empannage = vert */
 
-/* Indicateur virement/empannage */
-.point-card.maneuver::after {
-  content: '⚡';
+/* Badge manœuvre visible */
+.point-card.tack::after {
+  content: '🔴 VIREMENT';
   position: absolute;
-  top: 6px;
-  right: 8px;
-  font-size: 14px;
+  top: 6px; right: 8px;
+  font-size: 10px; font-weight: 900;
+  color: var(--twa-upwind);
+  font-family: var(--ui);
+  letter-spacing: 0.06em;
+}
+.point-card.gybe::after {
+  content: '🟢 EMPANNAGE';
+  position: absolute;
+  top: 6px; right: 8px;
+  font-size: 10px; font-weight: 900;
+  color: var(--twa-reach);
+  font-family: var(--ui);
+  letter-spacing: 0.06em;
 }
 
 .point-inner { padding: 8px 10px 8px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
@@ -398,21 +409,25 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
   font-weight: 900;
   letter-spacing: 0.04em;
 }
-.twa-badge.upwind   { background: var(--twa-up-bg); color: var(--twa-upwind); border: 1px solid var(--twa-upwind); }
-.twa-badge.reach    { background: var(--twa-reach-bg); color: var(--twa-reach); border: 1px solid var(--twa-reach); }
-.twa-badge.downwind { background: var(--twa-down-bg); color: var(--twa-downwind); border: 1px solid var(--twa-downwind); }
+/* TWA neutre par défaut, coloré si manœuvre détectée */
+.twa-badge         { color: var(--text); border: 1px solid var(--border); background: var(--bg3); }
+.twa-badge.twa-big { font-size: 16px; padding: 4px 12px; font-weight: 900; }
 
 /* Sail badge */
 .sail-badge { display: inline-block; padding: 3px 9px; border-radius: 4px; font-weight: 700; font-size: 12px; letter-spacing: 0.06em; color: #000; }
-.sail-jib  { background: var(--sail-jib); }
-.sail-spi  { background: var(--sail-spi); }
-.sail-lg   { background: var(--sail-lg); }
-.sail-lj   { background: var(--sail-lj); }
-.sail-c0   { background: var(--sail-c0); }
-.sail-hg   { background: var(--sail-hg); }
-.sail-hj   { background: var(--sail-hj); }
-.sail-stay { background: var(--sail-stay); }
-.sail-default { background: var(--text2); }
+.sail-badge.sail-big { font-size: 14px; padding: 4px 12px; font-weight: 900; }
+.sail-jib  { background: #f9a8d4; } /* rose clair */
+.sail-spi  { background: #c4b5fd; } /* violet */
+.sail-lg   { background: #fbbf24; } /* orange/jaune */
+.sail-lj   { background: #7dd3fc; } /* bleu clair */
+.sail-c0   { background: #86efac; } /* vert clair */
+.sail-hg   { background: #fb923c; } /* orange foncé */
+.sail-hj   { background: #fda4af; } /* rose foncé */
+.sail-stay { background: #a3e635; } /* vert lime — comme Route Zezo */
+.sail-default { background: var(--text2); color: #000; }
+
+/* Valeurs importantes plus grandes */
+.pf-val.pf-big { font-size: 16px; font-weight: 900; }
 
 .legend { display: flex; gap: 8px; flex-wrap: wrap; font-size: 10px; color: var(--muted); padding: 7px 4px 0; border-top: 1px dashed var(--border); margin-top: 6px; }
 .legend-item { display: flex; align-items: center; gap: 4px; }
@@ -628,7 +643,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
         </div>
 
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.3 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.5 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
@@ -1272,68 +1287,91 @@ function renderRoute(points) {
       <div class="summary-tile"><div class="summary-label">DTG fin</div><div class="summary-val">${dtgEnd}</div></div>
     </div>`;
 
-  // Détection virements/empannages (changement de signe TWA ou croisement 0/180)
+  // Détection virement (tack) vs empannage (gybe)
+  // Virement : TWA change de signe ET valeur abs < 90° (près/travers)
+  // Empannage : TWA change de signe ET valeur abs > 90° (portant)
   const html = points.map((p, i) => {
-    let isManeuver = false;
+    let maneuverType = null; // null | 'tack' | 'gybe'
     if (i > 0) {
       const prev = points[i-1];
-      if (prev.twa !== undefined && p.twa !== undefined) {
-        // Changement de signe = virement ou empannage
-        if (Math.sign(prev.twa) !== Math.sign(p.twa) && prev.twa !== 0) isManeuver = true;
-        // Ou grand écart (> 60°) = manœuvre probable
-        if (Math.abs(Math.abs(p.twa) - Math.abs(prev.twa)) > 60) isManeuver = true;
+      if (prev.twa !== undefined && p.twa !== undefined && prev.twa !== 0) {
+        const sideChanged = Math.sign(prev.twa) !== Math.sign(p.twa);
+        if (sideChanged) {
+          // Utilise le TWA moyen des deux points pour déterminer le type
+          const avgAbsTwa = (Math.abs(prev.twa) + Math.abs(p.twa)) / 2;
+          maneuverType = avgAbsTwa < 90 ? 'tack' : 'gybe';
+        }
       }
     }
-    return renderPoint(p, isManeuver);
+    return renderPoint(p, maneuverType);
   }).join('') + renderLegend();
   document.getElementById('route-content').innerHTML = `<div class="point-list">${html}</div>`;
 }
 
 function twaClass(twa) {
-  const abs = Math.abs(twa);
-  if (abs < 60)  return 'upwind';
-  if (abs < 120) return 'reach';
-  return 'downwind';
+  // Plus utilisé pour les allures — garde pour compatibilité badge TWA
+  return 'neutral';
 }
 
 function sailClass(sail) {
   if (!sail) return 'sail-default';
-  const s = sail.toLowerCase();
-  const map = { jib:'sail-jib', spi:'sail-spi', lg:'sail-lg', lj:'sail-lj', c0:'sail-c0', hg:'sail-hg', hj:'sail-hj', stay:'sail-stay' };
+  const s = sail.toLowerCase().trim();
+  const map = {
+    'jib':  'sail-jib',   // rose clair
+    'spi':  'sail-spi',   // violet
+    'lg':   'sail-lg',    // orange/jaune
+    'lj':   'sail-lj',    // bleu clair (Light Jib)
+    'c0':   'sail-c0',    // vert clair (C0)
+    'hg':   'sail-hg',    // orange foncé
+    'hj':   'sail-hj',    // rose foncé
+    'stay': 'sail-stay',  // vert lime (Staysail)
+  };
   return map[s] || 'sail-default';
 }
 
-function renderPoint(p, isManeuver) {
-  const tCls = twaClass(p.twa);
+function renderPoint(p, maneuverType) {
   const sCls = sailClass(p.sail);
   const tfmt = formatTimeInTz(p.dateRaw, p.timeRaw, p.sourceTz);
   const dateDisplay = `${tfmt.dateShort || p.dateShort} · ${tfmt.time}`;
   const tzBadge = (state.tz !== 'UTC' || p.sourceTz !== 'UTC')
     ? `<span style="font-size:9px;color:var(--accent);margin-left:4px">${tfmt.tz}</span>` : '';
+  // TWA : valeur absolue + indicateur bord (SB = tribord, BB = bâbord)
+  const twaAbs = p.twa !== undefined ? Math.abs(p.twa) : null;
+  const twaSide = p.twa !== undefined ? (p.twa >= 0 ? '<span style="font-size:9px;opacity:0.7"> SB</span>' : '<span style="font-size:9px;opacity:0.7"> BB</span>') : '';
+  // Couleur TWA selon manœuvre AU POINT SUIVANT (définie par le point d'après)
+  const twaColor = maneuverType === 'tack' ? 'style="color:var(--twa-upwind)"'
+                 : maneuverType === 'gybe' ? 'style="color:var(--twa-reach)"'
+                 : '';
 
   return `
-    <div class="point-card ${tCls}${isManeuver ? ' maneuver' : ''}">
+    <div class="point-card${maneuverType ? ' ' + maneuverType : ''}">
       <div class="point-inner">
         <div class="point-header">
           <span class="point-date">${dateDisplay}${tzBadge}</span>
           <span class="point-ttw">${p.ttw || ''}</span>
         </div>
+
+        <!-- Ligne 1 : Wind + TWA (les plus importantes, plus grandes) -->
         <div class="pf">
-          <span class="pf-label">Wind</span>
-          <span class="pf-val">${p.twd ?? '—'}° · ${p.tws ?? '—'} kt</span>
+          <span class="pf-label">Wind TWD · TWS</span>
+          <span class="pf-val pf-big">${p.twd ?? '—'}° · ${p.tws ?? '—'} kt</span>
         </div>
         <div class="pf">
-          <span class="pf-label">TWA</span>
-          <span class="twa-badge ${tCls}">${p.twa ?? '—'}°</span>
+          <span class="pf-label">TWA${twaSide}</span>
+          <span class="twa-badge twa-big" ${twaColor}>${twaAbs ?? '—'}°</span>
         </div>
+
+        <!-- Ligne 2 : Sail + Speed (importantes) -->
         <div class="pf">
           <span class="pf-label">Sail</span>
-          <span class="sail-badge ${sCls}">${p.sail || '—'}</span>
+          <span class="sail-badge ${sCls} sail-big">${p.sail || '—'}</span>
         </div>
         <div class="pf">
-          <span class="pf-label">Speed (STW)</span>
-          <span class="pf-val speed">${p.stw ?? '—'} kt</span>
+          <span class="pf-label">Speed STW</span>
+          <span class="pf-val pf-big speed">${p.stw ?? '—'} kt</span>
         </div>
+
+        <!-- Ligne 3 : Heading + DTG (secondaires) -->
         <div class="pf">
           <span class="pf-label">Heading</span>
           <span class="pf-val accent">${p.heading ?? '—'}°</span>
@@ -1348,10 +1386,8 @@ function renderPoint(p, isManeuver) {
 
 function renderLegend() {
   return `<div class="legend">
-    <div class="legend-item"><span class="legend-dot" style="background:var(--twa-upwind)"></span>Près</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--twa-reach)"></span>Travers</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--twa-downwind)"></span>Portant</div>
-    <div class="legend-item"><span>⚡</span> Manœuvre</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--twa-upwind)"></span>🔴 Virement</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--twa-reach)"></span>🟢 Empannage</div>
   </div>`;
 }
 
