@@ -71,7 +71,7 @@
 }
 
 /* ── DASHLAULO ── */
-[data-theme="laulo"] {
+[data-theme="dashlaulo"] {
   --bg:        #05080f;
   --bg2:       #0a0e1a;
   --bg3:       #111828;
@@ -1378,20 +1378,6 @@ function onTzChange() {
   if (lastRoutePoints) renderRoute(lastRoutePoints);
 }
 
-/* ── PROFIL EXPORT/IMPORT ── */
-.profile-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  width: calc(50% - 3px); background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text2); font-family: var(--ui); font-size: 12px;
-  font-weight: 700; letter-spacing: 0.06em; padding: 10px 8px; cursor: pointer;
-  text-transform: uppercase; transition: all 0.15s; text-align: center;
-}
-.profile-btn:active { transform: scale(0.96); }
-.profile-btn.export { border-color: var(--accent); color: var(--accent); }
-.profile-btn.import { border-color: var(--accent2); color: var(--accent2); }
-#import-file { display: none; }
-
-/* ── TOAST ── */
 let toastTimer = null;
 function showToast(msg) {
   const t = document.getElementById('toast');
