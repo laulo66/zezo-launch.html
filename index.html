@@ -613,18 +613,6 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
         <p style="color:var(--muted);font-size:11px">🎨 Bouton <strong>🎨</strong> (header) → Thèmes & Fuseau</p><br>
         <p style="color:var(--muted);font-size:11px">📋 Courses mises à jour auto depuis zezo.org (cache 24h).</p><br>
 
-        <!-- PROFIL EXPORT/IMPORT -->
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:8px">⚙️ Synchroniser mes réglages</div>
-          <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Exporte tes réglages (thème, fuseau, course, userid, O=) pour les retrouver sur un autre appareil ou navigateur.</p>
-          <div style="display:flex;gap:6px;margin-bottom:4px">
-            <button class="profile-btn export" onclick="exportProfile()">📤 Exporter</button>
-            <button class="profile-btn import" onclick="document.getElementById('import-file').click()">📥 Importer</button>
-          </div>
-          <input type="file" id="import-file" accept=".json" onchange="importProfile(event)">
-          <div id="import-status" style="font-size:10px;color:var(--accent2);margin-top:4px;font-family:var(--mono);min-height:14px"></div>
-        </div>
-
         <!-- LIEN PARTAGE -->
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:6px">🔗 Partager ZezoLaunch</div>
@@ -1213,26 +1201,23 @@ function parseZezoHtml(html) {
   const dotLayer = doc.getElementById('dot_layer');
   if (!dotLayer) return null;
 
-  // Extraire les variables de projection depuis les scripts inline
-  const scripts = html.match(/<script[\s\S]*?<\/script>/gi) || [];
+  // Extraire les variables de projection — regex directe sur le HTML brut
   let projVars = {};
-  for (const s of scripts) {
-    const getVar = (name) => {
-      const m = s.match(new RegExp(`var\s+${name}\s*=\s*([\-\d.]+)`));
-      return m ? parseFloat(m[1]) : null;
+  const exV = (name) => {
+    const m = html.match(new RegExp('var\\s+' + name + '\\s*=\\s*([\\-\\d.]+)'));
+    return m ? parseFloat(m[1]) : null;
+  };
+  const _blat = exV('boat_lat');
+  if (_blat !== null) {
+    projVars = {
+      boat_lat: _blat,
+      boat_lon: exV('boat_lon'),
+      scroll_x: exV('scroll_x'),
+      scroll_y: exV('scroll_y'),
+      scale:    exV('scale'),
     };
-    const boat_lat = getVar('boat_lat');
-    if (boat_lat !== null) {
-      projVars = {
-        boat_lat,
-        boat_lon: getVar('boat_lon'),
-        scroll_x: getVar('scroll_x'),
-        scroll_y: getVar('scroll_y'),
-        scale:    getVar('scale'),
-      };
-      break;
-    }
   }
+  console.log('[GPX] projVars:', JSON.stringify(projVars));
 
   const imgs = dotLayer.querySelectorAll('img.abs');
   const points = [];
