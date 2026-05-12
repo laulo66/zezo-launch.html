@@ -1387,7 +1387,7 @@ function renderPoint(p, maneuverType) {
       <div class="point-inner">
         <div class="point-header">
           <span class="point-date">${dateDisplay}${tzBadge}</span>
-          ${maneuverType ? `<span class="maneuver-badge ${maneuverType}">${maneuverType === 'tack' ? '🔴 VIREMENT' : '🟢 EMPANNAGE'}</span>` : ''}
+          ${maneuverType === 'tack' ? '<span class="maneuver-badge tack">🔴 VIREMENT</span>' : maneuverType === 'gybe' ? '<span class="maneuver-badge gybe">🟢 EMPANNAGE</span>' : ''}
           <span class="point-ttw">${p.ttw || ''}</span>
         </div>
 
@@ -1494,13 +1494,13 @@ function copyShareUrl() {
 ══════════════════════════════════════ */
 function exportGPX() {
   if (!lastRoutePoints || lastRoutePoints.length === 0) {
-    showToast('❌ Charge la route d'abord !');
+    showToast('❌ Charge la route dabord !');
     return;
   }
 
   const hasCoords = lastRoutePoints.some(p => p.lat !== undefined && p.lon !== undefined);
   if (!hasCoords) {
-    showToast('❌ Coordonnées non disponibles');
+    showToast('Coordonnees non disponibles');
     return;
   }
 
@@ -1540,8 +1540,7 @@ function exportGPX() {
         <dtg>${p.dtg ?? ''}</dtg>
       </extensions>
     </trkpt>`;
-    }).join('
-');
+    }).join('\n');
 
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="ZezoLaunch v1.4.7"
