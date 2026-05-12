@@ -332,6 +332,8 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
 .route-load-btn.loading { background: var(--bg3); color: var(--accent); cursor: wait; }
 
 .tz-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-family: var(--mono); font-size: 11px; padding: 6px 8px; cursor: pointer; -webkit-appearance: none; flex-shrink: 0; width: auto; }
+.gpx-btn { background: var(--bg3); border: 1px solid var(--accent2); border-radius: 7px; color: var(--accent2); font-family: var(--ui); font-size: 12px; font-weight: 700; padding: 6px 10px; cursor: pointer; flex-shrink: 0; letter-spacing: 0.04em; transition: all 0.15s; }
+.gpx-btn:active { transform: scale(0.96); }
 
 .route-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
 .summary-tile { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 7px 5px; text-align: center; }
@@ -368,30 +370,16 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
 .point-card.gybe::before   { background: var(--twa-reach); }    /* empannage = vert */
 
 /* Badge manœuvre visible */
-.point-card.tack::after {
-  content: '🔴 VIREMENT';
-  position: absolute;
-  top: 6px; right: 8px;
-  font-size: 10px; font-weight: 900;
-  color: var(--twa-upwind);
-  font-family: var(--ui);
-  letter-spacing: 0.06em;
-}
-.point-card.gybe::after {
-  content: '🟢 EMPANNAGE';
-  position: absolute;
-  top: 6px; right: 8px;
-  font-size: 10px; font-weight: 900;
-  color: var(--twa-reach);
-  font-family: var(--ui);
-  letter-spacing: 0.06em;
-}
+/* Badge manœuvre : plus de ::after, géré dans le HTML via JS */
 
 .point-inner { padding: 8px 10px 8px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px; }
 
-.point-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 2px; }
-.point-date { color: var(--text); font-weight: 700; font-size: 12px; font-family: var(--mono); }
-.point-ttw { color: var(--warn); font-size: 10px; font-weight: 700; background: rgba(255,159,10,0.1); padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,159,10,0.3); }
+.point-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 2px; flex-wrap: nowrap; }
+.point-date { color: var(--text); font-weight: 700; font-size: 12px; font-family: var(--mono); flex-shrink: 0; }
+.point-ttw { color: var(--warn); font-size: 10px; font-weight: 700; background: rgba(255,159,10,0.1); padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,159,10,0.3); flex-shrink: 0; }
+.maneuver-badge { font-size: 11px; font-weight: 900; font-family: var(--ui); letter-spacing: 0.06em; flex: 1; text-align: center; }
+.maneuver-badge.tack { color: var(--twa-upwind); }
+.maneuver-badge.gybe { color: var(--twa-reach); }
 
 .pf { display: flex; flex-direction: column; gap: 1px; }
 .pf-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--ui); font-weight: 700; }
@@ -587,6 +575,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
       <div class="card-body">
         <div class="route-toolbar">
           <button class="route-load-btn disabled" id="route-load-btn" onclick="loadRoute()">Charger la route</button>
+          <button class="gpx-btn" id="gpx-btn" onclick="exportGPX()" title="Exporter en GPX">📥 GPX</button>
           <select class="tz-select" id="tz-select" onchange="onTzChange()" title="Fuseau horaire">
             <option value="UTC">UTC</option>
             <option value="local">⏰ Local</option>
@@ -643,7 +632,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
         </div>
 
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.5 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.7 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
@@ -1223,14 +1212,64 @@ function parseZezoHtml(html) {
   const doc = parser.parseFromString(html, 'text/html');
   const dotLayer = doc.getElementById('dot_layer');
   if (!dotLayer) return null;
+
+  // Extraire les variables de projection depuis les scripts inline
+  const scripts = html.match(/<script[\s\S]*?<\/script>/gi) || [];
+  let projVars = {};
+  for (const s of scripts) {
+    const getVar = (name) => {
+      const m = s.match(new RegExp(`var\s+${name}\s*=\s*([\-\d.]+)`));
+      return m ? parseFloat(m[1]) : null;
+    };
+    const boat_lat = getVar('boat_lat');
+    if (boat_lat !== null) {
+      projVars = {
+        boat_lat,
+        boat_lon: getVar('boat_lon'),
+        scroll_x: getVar('scroll_x'),
+        scroll_y: getVar('scroll_y'),
+        scale:    getVar('scale'),
+      };
+      break;
+    }
+  }
+
   const imgs = dotLayer.querySelectorAll('img.abs');
   const points = [];
-  imgs.forEach(img => {
+  let p0_left = null, p0_top = null;
+  let lon_offset = null, lat_offset = null;
+
+  imgs.forEach((img, idx) => {
     const mo = img.getAttribute('onmouseover');
     if (!mo) return;
     const p = parsePointTooltip(mo);
-    if (p) points.push(p);
+    if (!p) return;
+
+    // Extraire left/top du style
+    const styleAttr = img.getAttribute('style') || '';
+    const leftM = styleAttr.match(/left\s*:\s*(-?[\d.]+)px/);
+    const topM  = styleAttr.match(/top\s*:\s*(-?[\d.]+)px/);
+    if (leftM && topM) {
+      const left = parseFloat(leftM[1]);
+      const top  = parseFloat(topM[1]);
+
+      // Calibrage sur le premier point (= position bateau)
+      if (idx === 0 && projVars.boat_lat !== null && projVars.scale) {
+        p0_left = left; p0_top = top;
+        lon_offset = projVars.boat_lon - (left + projVars.scroll_x) / projVars.scale;
+        lat_offset = projVars.boat_lat + (top  + projVars.scroll_y) / projVars.scale;
+      }
+
+      // Calcul lat/lon si calibrage disponible
+      if (lon_offset !== null) {
+        p.lon = Math.round(((left + projVars.scroll_x) / projVars.scale + lon_offset) * 100000) / 100000;
+        p.lat = Math.round((-(top  + projVars.scroll_y) / projVars.scale + lat_offset) * 100000) / 100000;
+      }
+    }
+
+    points.push(p);
   });
+
   return points;
 }
 
@@ -1348,6 +1387,7 @@ function renderPoint(p, maneuverType) {
       <div class="point-inner">
         <div class="point-header">
           <span class="point-date">${dateDisplay}${tzBadge}</span>
+          ${maneuverType ? `<span class="maneuver-badge ${maneuverType}">${maneuverType === 'tack' ? '🔴 VIREMENT' : '🟢 EMPANNAGE'}</span>` : ''}
           <span class="point-ttw">${p.ttw || ''}</span>
         </div>
 
@@ -1449,6 +1489,87 @@ function copyShareUrl() {
 /* ══════════════════════════════════════
    EXPORT / IMPORT PROFIL
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   EXPORT GPX
+══════════════════════════════════════ */
+function exportGPX() {
+  if (!lastRoutePoints || lastRoutePoints.length === 0) {
+    showToast('❌ Charge la route d'abord !');
+    return;
+  }
+
+  const hasCoords = lastRoutePoints.some(p => p.lat !== undefined && p.lon !== undefined);
+  if (!hasCoords) {
+    showToast('❌ Coordonnées non disponibles');
+    return;
+  }
+
+  const courseName = getCourseLabel(state.course);
+  const dateStr = lastRoutePoints[0]?.dateRaw || new Date().toISOString().slice(0,10);
+  const trackName = `ZezoLaunch — ${courseName} — o=${state.o} — ${dateStr}`;
+
+  const trkpts = lastRoutePoints
+    .filter(p => p.lat !== undefined && p.lon !== undefined)
+    .map(p => {
+      // Reconstruit un timestamp ISO
+      let timeStr = '';
+      if (p.dateRaw && p.timeRaw) {
+        const tz = p.sourceTz === 'UTC' ? 'Z' : '+00:00';
+        timeStr = `<time>${p.dateRaw}T${p.timeRaw}:00${tz}</time>`;
+      }
+      const desc = [
+        p.twa !== undefined ? `TWA: ${Math.abs(p.twa)}°` : '',
+        p.tws !== undefined ? `TWS: ${p.tws}kt` : '',
+        p.sail ? `Sail: ${p.sail}` : '',
+        p.stw !== undefined ? `STW: ${p.stw}kt` : '',
+        p.heading !== undefined ? `HDG: ${p.heading}°` : '',
+        p.dtg !== undefined ? `DTG: ${p.dtg}nm` : '',
+      ].filter(Boolean).join(' | ');
+
+      return `    <trkpt lat="${p.lat}" lon="${p.lon}">
+      ${timeStr}
+      <name>${p.ttw || ''}</name>
+      <desc>${desc}</desc>
+      <extensions>
+        <twa>${p.twa ?? ''}</twa>
+        <tws>${p.tws ?? ''}</tws>
+        <twd>${p.twd ?? ''}</twd>
+        <sail>${p.sail ?? ''}</sail>
+        <stw>${p.stw ?? ''}</stw>
+        <hdg>${p.heading ?? ''}</hdg>
+        <dtg>${p.dtg ?? ''}</dtg>
+      </extensions>
+    </trkpt>`;
+    }).join('
+');
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="ZezoLaunch v1.4.7"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>${trackName}</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>${trackName}</name>
+    <trkseg>
+${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`;
+
+  const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `zezolaunch-${state.course}-${dateStr}.gpx`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✅ GPX exporté (${lastRoutePoints.filter(p=>p.lat).length} points)`);
+}
+
 function exportProfile() {
   const profile = {
     version: '1.4.3',
