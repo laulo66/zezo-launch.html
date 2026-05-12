@@ -1534,14 +1534,19 @@ function exportGPX() {
     if (p.dateRaw && p.timeRaw) {
       timeStr = `<time>${p.dateRaw}T${p.timeRaw}:00Z</time>`;
     }
-    const name = p.ttw || '';
-    const sym = p.sail ? p.sail : 'Waypoint';
-    const desc = [
-      p.twa !== undefined ? `TWA:${Math.abs(p.twa)}°` : '',
-      p.tws !== undefined ? `TWS:${p.tws}kt` : '',
-      p.sail ? `${p.sail}` : '',
-      p.stw !== undefined ? `${p.stw}kt` : '',
-    ].filter(Boolean).join(' ');
+    // Nom enrichi : toutes les infos clés visibles au clic dans Windy
+    const twaAbs = p.twa !== undefined ? Math.abs(p.twa) + '°' : '';
+    const side = p.twa !== undefined ? (p.twa >= 0 ? 'SB' : 'BB') : '';
+    const name = [
+      p.ttw || '',
+      p.sail || '',
+      p.stw !== undefined ? p.stw + 'kt' : '',
+      twaAbs ? 'TWA:' + twaAbs + side : '',
+      p.tws !== undefined ? 'TWS:' + p.tws + 'kt' : '',
+      p.heading !== undefined ? 'HDG:' + p.heading + '°' : '',
+    ].filter(Boolean).join(' | ');
+    const sym = p.sail || 'Waypoint';
+    const desc = p.dtg !== undefined ? 'DTG:' + p.dtg + 'nm' : '';
 
     return `  <wpt lat="${p.lat}" lon="${p.lon}">
     ${timeStr}
