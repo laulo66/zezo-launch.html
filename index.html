@@ -620,7 +620,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
         </div>
 
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.8 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.9 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
@@ -1051,15 +1051,25 @@ function onOManual() {
    Auto-jump sur : 2 chiffres saisis OU touche Tab/Entrée/→
 ══════════════════════════════════════ */
 function onCoordsChange() {
-  state.lat_deg = parseInt(document.getElementById('lat_deg').value) || '';
-  state.lat_min = parseInt(document.getElementById('lat_min').value) || '';
-  state.lat_sec = parseInt(document.getElementById('lat_sec').value) || '';
+  // Utilise parseCoord() pour préserver la valeur 0 (0 || '' = '' en JS !)
+  state.lat_deg = parseCoord('lat_deg');
+  state.lat_min = parseCoord('lat_min');
+  state.lat_sec = parseCoord('lat_sec');
   state.lat_ns  = document.getElementById('lat_ns').value;
-  state.lon_deg = parseInt(document.getElementById('lon_deg').value) || '';
-  state.lon_min = parseInt(document.getElementById('lon_min').value) || '';
-  state.lon_sec = parseInt(document.getElementById('lon_sec').value) || '';
+  state.lon_deg = parseCoord('lon_deg');
+  state.lon_min = parseCoord('lon_min');
+  state.lon_sec = parseCoord('lon_sec');
   state.lon_ew  = document.getElementById('lon_ew').value;
   saveConfig(); updateUI();
+}
+
+// Parse un champ coord : retourne le nombre ou '' si vide/invalide
+// Préserve 0 contrairement à parseInt(v) || ''
+function parseCoord(id) {
+  const raw = document.getElementById(id).value;
+  if (raw === '' || raw === null) return '';
+  const v = parseInt(raw, 10);
+  return isNaN(v) ? '' : v;
 }
 
 // Auto-jump indépendant : appelé depuis oninput de chaque input spécifiquement
@@ -1090,8 +1100,10 @@ function coordKeyDown(e, nextId) {
 }
 
 function coordsValid() {
-  return state.lat_deg !== '' && state.lat_min !== '' && state.lat_sec !== '' &&
-         state.lon_deg !== '' && state.lon_min !== '' && state.lon_sec !== '';
+  // Vérifie que chaque champ est un nombre (0 est valide !)
+  const isNum = v => v !== '' && !isNaN(v) && v !== null;
+  return isNum(state.lat_deg) && isNum(state.lat_min) && isNum(state.lat_sec) &&
+         isNum(state.lon_deg) && isNum(state.lon_min) && isNum(state.lon_sec);
 }
 
 /* ══════════════════════════════════════
@@ -1562,7 +1574,7 @@ function exportGPX() {
   }).join('\n');
 
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="ZezoLaunch v1.4.8"
+<gpx version="1.1" creator="ZezoLaunch v1.4.9"
   xmlns="http://www.topografix.com/GPX/1/1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
