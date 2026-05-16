@@ -495,7 +495,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <div class="coord-dir-label">LON</div>
           <div class="coord-field">
             <input type="number" id="lon_deg" placeholder="38" min="0" max="180"
-              oninput="onCoordsChange(); autoJump(this,'lon_min',99)"
+              oninput="onCoordsChange(); autoJump(this,'lon_min',180)"
               onkeydown="coordKeyDown(event,'lon_min')">
             <span class="coord-field-label">degrés °</span>
           </div>
@@ -620,7 +620,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
         </div>
 
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.7 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.8 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
@@ -1069,9 +1069,14 @@ function autoJump(el, nextId, maxVal) {
   if (!raw) return;
   const v = parseInt(raw);
   if (isNaN(v)) return;
-  // Saute quand le nombre de chiffres saisis atteint le nombre de chiffres du max
+  // Saute si :
+  // 1. La valeur dépasse le max → champ plein
+  // 2. La chaîne saisie a atteint le nombre de chiffres du max
+  //    (ex: max=59 → 2 chiffres ; max=90 → 2 chiffres ; max=180 → 3 chiffres)
+  // On utilise raw.length pour gérer correctement "0", "00", "05" etc.
   const digitsNeeded = String(maxVal).length;
-  if (String(Math.abs(v)).length >= digitsNeeded) {
+  const shouldJump = raw.length >= digitsNeeded || v > maxVal;
+  if (shouldJump) {
     setTimeout(() => document.getElementById(nextId)?.focus(), 0);
   }
 }
@@ -1557,7 +1562,7 @@ function exportGPX() {
   }).join('\n');
 
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="ZezoLaunch v1.4.7"
+<gpx version="1.1" creator="ZezoLaunch v1.4.8"
   xmlns="http://www.topografix.com/GPX/1/1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
