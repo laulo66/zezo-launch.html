@@ -495,7 +495,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <div class="coord-dir-label">LON</div>
           <div class="coord-field">
             <input type="number" id="lon_deg" placeholder="38" min="0" max="180"
-              oninput="onCoordsChange(); autoJump(this,'lon_min',180)"
+              oninput="onCoordsChange(); autoJump(this,'lon_min',99)"
               onkeydown="coordKeyDown(event,'lon_min')">
             <span class="coord-field-label">degrés °</span>
           </div>
@@ -540,6 +540,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button class="course-refresh-btn" id="course-refresh-btn" onclick="manualRefreshCourses()">↻ Actualiser</button>
           <span class="course-meta" id="course-cache-info">—</span>
         </div>
+        <div id="fallback-expire-info" style="font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:5px;text-align:right"></div>
       </div>
     </div>
 
@@ -620,7 +621,7 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
           <button onclick="copyShareUrl()" id="copy-btn" style="background:var(--accent);border:none;border-radius:6px;color:#000;font-family:var(--ui);font-size:12px;font-weight:800;padding:7px 16px;cursor:pointer;letter-spacing:0.06em;width:100%">📋 Copier le lien</button>
         </div>
 
-        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.9 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
+        <p style="color:var(--muted);font-size:10px;font-family:var(--mono)">ZezoLaunch v1.4.8 — dashlaulo ecosystem<br>RasTaTranKill66_Alta</p>
       </div>
     </div>
   </div>
@@ -675,22 +676,30 @@ input[type="number"]:focus, input[type="text"]:focus, select:focus { border-colo
 /* ══════════════════════════════════════
    DONNÉES
 ══════════════════════════════════════ */
-const COURSES_FALLBACK = [
+// expires : date ISO après laquelle la course disparaît du fallback automatiquement
+// Pas de expires = course permanente (Jules Verne, etc.)
+// Format : 'YYYY-MM-DD'
+const COURSES_FALLBACK_RAW = [
+  // Courses en cours ou à venir — ajouter ici quand une nouvelle course VR commence
+  // expires = date estimée de fin (+ 7j de grâce automatique)
+  { slug: 'london',     label: 'HK to London',        expires: '2026-08-01' },
+  { slug: 'together',   label: 'Ocean Together',       expires: '2026-08-31' },
+  { slug: 'rts',        label: 'Road To Summer',       expires: '2026-09-01' },
   { slug: 'jv',         label: 'Jules Verne' },
-  { slug: 'london',     label: 'HK to London' },
-  { slug: 'globe6',     label: 'Globe 40 #7' },
-  { slug: 'hypersail2', label: 'HyperSail GP 2' },
-  { slug: 'martinique', label: 'Cap Martinique' },
-  { slug: '1000race',   label: '1000 Race' },
-  { slug: 'odyssee',    label: 'Odyssée Ultim' },
-  { slug: 'medchannel', label: 'Med Channel Race' },
-  { slug: 'rts',        label: 'Road To Summer' },
-  { slug: 'mayo',       label: 'Cinco de Mayo' },
-  { slug: 'easter',     label: 'Easter Race' },
-  { slug: 'titanic',    label: 'Titanic' },
-  { slug: 'vgas',       label: 'Atlantic VGAS' },
-  { slug: 'pornichet',  label: 'La Pornichet Select' },
 ];
+
+// Filtre automatique : supprime les courses dont la date expires est dépassée
+// On garde 7 jours de marge après expiration pour les retardataires
+const FALLBACK_GRACE_DAYS = 7;
+function filterExpiredCourses(list) {
+  const now = Date.now();
+  return list.filter(c => {
+    if (!c.expires) return true; // permanente
+    const exp = new Date(c.expires).getTime() + FALLBACK_GRACE_DAYS * 86400000;
+    return now < exp;
+  });
+}
+const COURSES_FALLBACK = filterExpiredCourses(COURSES_FALLBACK_RAW);
 
 const COURSES_CACHE_KEY = 'zezolaunch-courses-v2';
 const COURSES_CACHE_TTL = 24 * 3600 * 1000;
@@ -965,6 +974,7 @@ async function manualRefreshCourses() {
 function updateCourseCacheInfo() {
   const info = document.getElementById('course-cache-info');
   const inline = document.getElementById('course-meta-inline');
+  const fallbackInfo = document.getElementById('fallback-expire-info');
   if (!info) return;
   const n = COURSES_OFFICIAL.length;
   let txt = '', cls = '';
@@ -976,6 +986,18 @@ function updateCourseCacheInfo() {
   else { txt = `liste de secours`; cls = 'course-meta stale'; }
   info.textContent = txt; info.className = cls;
   if (inline) inline.textContent = `${COURSES_OFFICIAL.length + COURSES_EXTRA.length} courses`;
+  // Affiche les courses fallback supprimées par expiration
+  if (fallbackInfo) {
+    const expiredCount = COURSES_FALLBACK_RAW.length - COURSES_FALLBACK.length;
+    if (expiredCount > 0) {
+      const expiredNames = COURSES_FALLBACK_RAW
+        .filter(c => c.expires && new Date(c.expires).getTime() + FALLBACK_GRACE_DAYS * 86400000 <= Date.now())
+        .map(c => c.label).join(', ');
+      fallbackInfo.textContent = `🗑️ ${expiredCount} cours(es) fallback expirée(s) auto-supprimée(s) : ${expiredNames}`;
+    } else {
+      fallbackInfo.textContent = '';
+    }
+  }
 }
 
 function buildCourseSelect() {
@@ -1051,25 +1073,15 @@ function onOManual() {
    Auto-jump sur : 2 chiffres saisis OU touche Tab/Entrée/→
 ══════════════════════════════════════ */
 function onCoordsChange() {
-  // Utilise parseCoord() pour préserver la valeur 0 (0 || '' = '' en JS !)
-  state.lat_deg = parseCoord('lat_deg');
-  state.lat_min = parseCoord('lat_min');
-  state.lat_sec = parseCoord('lat_sec');
+  state.lat_deg = parseInt(document.getElementById('lat_deg').value) || '';
+  state.lat_min = parseInt(document.getElementById('lat_min').value) || '';
+  state.lat_sec = parseInt(document.getElementById('lat_sec').value) || '';
   state.lat_ns  = document.getElementById('lat_ns').value;
-  state.lon_deg = parseCoord('lon_deg');
-  state.lon_min = parseCoord('lon_min');
-  state.lon_sec = parseCoord('lon_sec');
+  state.lon_deg = parseInt(document.getElementById('lon_deg').value) || '';
+  state.lon_min = parseInt(document.getElementById('lon_min').value) || '';
+  state.lon_sec = parseInt(document.getElementById('lon_sec').value) || '';
   state.lon_ew  = document.getElementById('lon_ew').value;
   saveConfig(); updateUI();
-}
-
-// Parse un champ coord : retourne le nombre ou '' si vide/invalide
-// Préserve 0 contrairement à parseInt(v) || ''
-function parseCoord(id) {
-  const raw = document.getElementById(id).value;
-  if (raw === '' || raw === null) return '';
-  const v = parseInt(raw, 10);
-  return isNaN(v) ? '' : v;
 }
 
 // Auto-jump indépendant : appelé depuis oninput de chaque input spécifiquement
@@ -1079,14 +1091,9 @@ function autoJump(el, nextId, maxVal) {
   if (!raw) return;
   const v = parseInt(raw);
   if (isNaN(v)) return;
-  // Saute si :
-  // 1. La valeur dépasse le max → champ plein
-  // 2. La chaîne saisie a atteint le nombre de chiffres du max
-  //    (ex: max=59 → 2 chiffres ; max=90 → 2 chiffres ; max=180 → 3 chiffres)
-  // On utilise raw.length pour gérer correctement "0", "00", "05" etc.
+  // Saute quand le nombre de chiffres saisis atteint le nombre de chiffres du max
   const digitsNeeded = String(maxVal).length;
-  const shouldJump = raw.length >= digitsNeeded || v > maxVal;
-  if (shouldJump) {
+  if (String(Math.abs(v)).length >= digitsNeeded) {
     setTimeout(() => document.getElementById(nextId)?.focus(), 0);
   }
 }
@@ -1100,10 +1107,8 @@ function coordKeyDown(e, nextId) {
 }
 
 function coordsValid() {
-  // Vérifie que chaque champ est un nombre (0 est valide !)
-  const isNum = v => v !== '' && !isNaN(v) && v !== null;
-  return isNum(state.lat_deg) && isNum(state.lat_min) && isNum(state.lat_sec) &&
-         isNum(state.lon_deg) && isNum(state.lon_min) && isNum(state.lon_sec);
+  return state.lat_deg !== '' && state.lat_min !== '' && state.lat_sec !== '' &&
+         state.lon_deg !== '' && state.lon_min !== '' && state.lon_sec !== '';
 }
 
 /* ══════════════════════════════════════
@@ -1574,7 +1579,7 @@ function exportGPX() {
   }).join('\n');
 
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="ZezoLaunch v1.4.9"
+<gpx version="1.1" creator="ZezoLaunch v1.4.8"
   xmlns="http://www.topografix.com/GPX/1/1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
